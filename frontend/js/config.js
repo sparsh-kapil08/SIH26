@@ -28,7 +28,7 @@ const DYNAMIC_BACKEND_URL =
     (typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('doca_backend_url') : null) ||
     ((typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) 
         ? 'http://localhost:5000' 
-        : 'https://sih26-phi.vercel.app');
+        : 'https://sih-26-six.vercel.app/');
 
 const CONFIG = {
     // Backend API Base URL dynamically resolved from environment

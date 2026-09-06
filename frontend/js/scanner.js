@@ -560,7 +560,10 @@ function initStepHandlers() {
 
 async function runMultimodalAnalysis() {
     console.group('[Vision] === Multimodal Analysis Start ===');
-    const labelImages = scanState.labelImages.length ? scanState.labelImages : [scanState.labelImage];
+    const labelImages = (scanState.labelImages.length
+        ? scanState.labelImages.map(image => typeof image === 'string' ? image : image?.warped || image?.original)
+        : [scanState.labelImage]
+    ).filter(image => typeof image === 'string' && image.length > 0);
     console.log('[Vision] PDP images:', labelImages.map((image, index) => ({
         index: index + 1,
         size: image ? Math.round(image.length / 1024) + 'KB' : 'MISSING'

@@ -38,6 +38,13 @@ module.exports = async (req, res) => {
             return res.status(400).json({ error: 'Missing imageBase64 in request body' });
         }
 
+        if (images.some(image => typeof image !== 'string')) {
+            return res.status(400).json({
+                success: false,
+                error: 'imageBase64s must contain base64 image strings.'
+            });
+        }
+
         if (!GEMINI_API_KEY) {
             console.error('[Vision API] GEMINI_API_KEY is missing.');
             return res.status(503).json({ success: false, error: 'Gemini API key is not configured on the server.' });

@@ -1,11 +1,11 @@
-// ============================================================
+﻿// ============================================================
 // CONFIGURATION — Legal Metrology Compliance Checker (Frontend)
 // Problem Statement: SIH26034 (DoCA / MoCA)
 // Standard Vite Environment Variables (import.meta.env)
 // ============================================================
 
-// Safely access Vite environment variables
-const env = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
+// This file is also served as a static browser script on the multi-page build.
+const env = { VITE_BACKEND_URL: 'http://localhost:5000' };
 
 const CONFIG = {
     // Backend API Base URL strictly fetched from Vite environment variables (.env / Vercel VITE_)

@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // CONFIGURATION — Legal Metrology Compliance Checker (Frontend)
 // Problem Statement: SIH26034 (DoCA / MoCA)
 // Pure Vanilla JS Compatible (No import.meta syntax errors)
@@ -26,9 +26,7 @@ const DYNAMIC_BACKEND_URL =
     getEnvVar('BACKEND_URL') ||
     getEnvVar('NEXT_PUBLIC_BACKEND_URL') ||
     (typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('doca_backend_url') : null) ||
-    ((typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) 
-        ? 'http://localhost:5000' 
-        : 'https://sih-26-six.vercel.app');
+    (typeof window !== 'undefined' && window.location ? window.location.origin : '');
 
 const CONFIG = {
     // Backend API Base URL dynamically resolved from environment
@@ -39,6 +37,24 @@ const CONFIG = {
     },
     get CONFIG_API_URL() {
         return (this.BACKEND_URL || '').replace(/\/$/, '') + '/api/config';
+    },
+
+    // Automatically fetch backend environment variables from /api/config
+    async refreshFromApi() {
+        if (typeof window === 'undefined') return;
+        try {
+            const configEndpoint = (this.BACKEND_URL || window.location.origin).replace(/\/$/, '') + '/api/config';
+            const res = await fetch(configEndpoint);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.backendUrl) {
+                    this.BACKEND_URL = data.backendUrl;
+                    console.log('[CONFIG] Dynamically loaded BACKEND_URL from environment API:', data.backendUrl);
+                }
+            }
+        } catch (err) {
+            console.warn('[CONFIG] /api/config auto-fetch note:', err.message);
+        }
     },
 
     // Supabase Backend Credentials (resolved from environment with fallback)

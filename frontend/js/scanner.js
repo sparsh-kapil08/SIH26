@@ -23,6 +23,10 @@ const scanState = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (typeof CONFIG !== 'undefined' && CONFIG.refreshFromApi) {
+        await CONFIG.refreshFromApi();
+    }
+
     try {
         const profile = (typeof SupabaseService !== 'undefined' && SupabaseService.getProfile)
             ? await SupabaseService.getProfile()
@@ -306,14 +310,61 @@ function handleFileUpload(e) {
     e.target.value = '';
 }
 
+function openPerspectiveCropper(dataUrl, callback) {
+    const modal = document.getElementById('cropperModal');
+    if (!modal || typeof PerspectiveCropper === 'undefined') {
+        console.warn('[Cropper] Cropper modal or PerspectiveCropper module not available. Proceeding with uncropped image.');
+        callback(dataUrl);
+        return;
+    }
+
+    modal.style.display = 'flex';
+    PerspectiveCropper.initEditor('cropperCanvas', dataUrl);
+
+    const btnApply = document.getElementById('btnCropperApply');
+    const btnSkip = document.getElementById('btnCropperSkip');
+    const btnReset = document.getElementById('btnCropperReset');
+
+    if (btnApply) {
+        btnApply.onclick = () => {
+            console.log('[Cropper] Applying 4-point perspective warp...');
+            const cropped = PerspectiveCropper.cropAndWarp() || dataUrl;
+            modal.style.display = 'none';
+            callback(cropped);
+        };
+    }
+
+    if (btnSkip) {
+        btnSkip.onclick = () => {
+            console.log('[Cropper] Skipping perspective cropping...');
+            modal.style.display = 'none';
+            callback(dataUrl);
+        };
+    }
+
+    if (btnReset) {
+        btnReset.onclick = () => {
+            console.log('[Cropper] Resetting corner handles...');
+            PerspectiveCropper.resetDefaultPoints();
+            PerspectiveCropper.renderEditor();
+        };
+    }
+}
+
 function addLabelImage(dataUrl) {
-    console.log('[Label] setLabelImage called. Data length:', Math.round(dataUrl.length / 1024), 'KB');
+    if (scanState.labelImages.length >= 4) return;
+    openPerspectiveCropper(dataUrl, (finalDataUrl) => {
+        commitLabelImage(finalDataUrl);
+    });
+}
+
+function commitLabelImage(dataUrl) {
+    console.log('[Label] commitLabelImage called. Data length:', Math.round(dataUrl.length / 1024), 'KB');
     if (scanState.labelImages.length >= 4) return;
     scanState.labelImages.push(dataUrl);
     scanState.labelImage = scanState.labelImages[0];
 
     const preview = document.getElementById('capturedLabelPreview');
-    // Step 3 has its own camera container wrapper - check both IDs
     const feedContainer = document.getElementById('cameraFeedContainer3') || document.getElementById('cameraFeedContainer');
     const btnCapture = document.getElementById('btnCaptureLabel');
     const btnRetake = document.getElementById('btnRetakeLabel');
@@ -348,7 +399,7 @@ function addLabelImage(dataUrl) {
     }
     if (btnRunAi) { btnRunAi.disabled = false; btnRunAi.style.opacity = '1'; }
     renderLabelPhotoCollection();
-    console.log('[Label] Label image set. AI button enabled.');
+    console.log('[Label] Label photo committed after perspective check.');
 }
 
 function renderLabelPhotoCollection() {

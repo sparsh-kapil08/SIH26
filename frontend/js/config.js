@@ -1,7 +1,7 @@
 // ============================================================
 // CONFIGURATION — Legal Metrology Compliance Checker (Frontend)
 // Problem Statement: SIH26034 (DoCA / MoCA)
-// Pure Vanilla JS Compatible (No import.meta syntax errors)
+// Pure Vanilla JS Compatible — Fetches BACKEND_URL strictly from .env
 // ============================================================
 
 function getEnvVar(name) {
@@ -9,52 +9,36 @@ function getEnvVar(name) {
     if (typeof window !== 'undefined' && window.ENV_CONFIG) {
         if (window.ENV_CONFIG[name]) return window.ENV_CONFIG[name];
         if (window.ENV_CONFIG['VITE_' + name]) return window.ENV_CONFIG['VITE_' + name];
+        if (window.ENV_CONFIG['NEXT_PUBLIC_' + name]) return window.ENV_CONFIG['NEXT_PUBLIC_' + name];
     }
 
-    // 2. Process environment variables
+    // 2. Process environment variables (.env)
     if (typeof window !== 'undefined' && window.process && window.process.env) {
         if (window.process.env[name]) return window.process.env[name];
         if (window.process.env['VITE_' + name]) return window.process.env['VITE_' + name];
+        if (window.process.env['NEXT_PUBLIC_' + name]) return window.process.env['NEXT_PUBLIC_' + name];
     }
 
     return null;
 }
 
-// Dynamically resolve Backend URL
-const DYNAMIC_BACKEND_URL = 
-    getEnvVar('VITE_BACKEND_URL') ||
+// Dynamically resolve Backend URL strictly from environment variables (.env)
+const ENV_BACKEND_URL = 
     getEnvVar('BACKEND_URL') ||
+    getEnvVar('VITE_BACKEND_URL') ||
     getEnvVar('NEXT_PUBLIC_BACKEND_URL') ||
-    (typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('doca_backend_url') : null) ||
-    (typeof window !== 'undefined' && window.location ? window.location.origin : '');
+    (typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('doca_backend_url') : '') ||
+    '';
 
 const CONFIG = {
-    // Backend API Base URL dynamically resolved from environment
-    BACKEND_URL: DYNAMIC_BACKEND_URL,
+    // Backend API Base URL strictly fetched from environment variables (.env)
+    BACKEND_URL: ENV_BACKEND_URL,
 
     get VISION_PROXY_URL() {
         return (this.BACKEND_URL || '').replace(/\/$/, '') + '/api/analyze-label';
     },
     get CONFIG_API_URL() {
         return (this.BACKEND_URL || '').replace(/\/$/, '') + '/api/config';
-    },
-
-    // Automatically fetch backend environment variables from /api/config
-    async refreshFromApi() {
-        if (typeof window === 'undefined') return;
-        try {
-            const configEndpoint = (this.BACKEND_URL || window.location.origin).replace(/\/$/, '') + '/api/config';
-            const res = await fetch(configEndpoint);
-            if (res.ok) {
-                const data = await res.json();
-                if (data && data.backendUrl) {
-                    this.BACKEND_URL = data.backendUrl;
-                    console.log('[CONFIG] Dynamically loaded BACKEND_URL from environment API:', data.backendUrl);
-                }
-            }
-        } catch (err) {
-            console.warn('[CONFIG] /api/config auto-fetch note:', err.message);
-        }
     },
 
     // Supabase Backend Credentials (resolved from environment with fallback)

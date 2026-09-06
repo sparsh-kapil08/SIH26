@@ -23,10 +23,6 @@ const scanState = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    if (typeof CONFIG !== 'undefined' && CONFIG.refreshFromApi) {
-        await CONFIG.refreshFromApi();
-    }
-
     try {
         const profile = (typeof SupabaseService !== 'undefined' && SupabaseService.getProfile)
             ? await SupabaseService.getProfile()

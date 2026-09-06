@@ -347,11 +347,23 @@ function openPerspectiveCropper(dataUrl, callback) {
     }
 }
 
-function addLabelImage(dataUrl) {
+async function addLabelImage(dataUrl) {
     if (scanState.labelImages.length >= 4) return;
-    openPerspectiveCropper(dataUrl, (finalDataUrl) => {
-        commitLabelImage(finalDataUrl);
-    });
+
+    showLoading('✨ Auto-straightening & perspective correcting label...');
+    try {
+        let finalUrl = dataUrl;
+        if (typeof PerspectiveCropper !== 'undefined' && PerspectiveCropper.autoWarp) {
+            finalUrl = await PerspectiveCropper.autoWarp(dataUrl);
+            console.log('[AutoPerspective] Image automatically perspective-corrected.');
+        }
+        hideLoading();
+        commitLabelImage(finalUrl);
+    } catch (e) {
+        hideLoading();
+        console.warn('[AutoPerspective] Fallback to original photo:', e.message);
+        commitLabelImage(dataUrl);
+    }
 }
 
 function commitLabelImage(dataUrl) {
@@ -407,11 +419,33 @@ function renderLabelPhotoCollection() {
     collection.style.display = scanState.labelImages.length ? 'block' : 'none';
     thumbnails.innerHTML = '';
     scanState.labelImages.forEach((image, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position: relative; width: 100%; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid #CBD5E1; cursor: pointer;';
+        
         const thumbnail = document.createElement('img');
         thumbnail.src = image;
         thumbnail.alt = `Inspection photo ${index + 1}`;
-        thumbnail.style.cssText = 'width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; border: 1px solid #CBD5E1;';
-        thumbnails.appendChild(thumbnail);
+        thumbnail.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+        
+        const badge = document.createElement('div');
+        badge.style.cssText = 'position: absolute; bottom: 2px; left: 2px; right: 2px; background: rgba(15, 23, 42, 0.75); color: #10B981; font-size: 0.65rem; font-weight: 700; text-align: center; padding: 2px 4px; border-radius: 3px; backdrop-filter: blur(2px);';
+        badge.innerHTML = '✨ Auto-Warped';
+        
+        wrapper.appendChild(thumbnail);
+        wrapper.appendChild(badge);
+
+        // Optional fine-tune crop on click
+        wrapper.onclick = () => {
+            if (confirm(`Fine-tune corner cropping for photo ${index + 1}?`)) {
+                openPerspectiveCropper(image, (updatedUrl) => {
+                    scanState.labelImages[index] = updatedUrl;
+                    scanState.labelImage = scanState.labelImages[0];
+                    renderLabelPhotoCollection();
+                });
+            }
+        };
+
+        thumbnails.appendChild(wrapper);
     });
 }
 

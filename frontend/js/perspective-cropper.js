@@ -1,7 +1,7 @@
 // ============================================================
 // DOCUMENT PERSPECTIVE CROPPER ENGINE
-// Automatic 4-Point Homography Perspective Transformation
-// Detects package boundaries & automatically flattens tilted PDP photos
+// High-Precision 4-Point Homography Perspective Transformation
+// Automatic boundary detection & interactive corner dragging on raw photos
 // ============================================================
 
 const PerspectiveCropper = {
@@ -14,7 +14,7 @@ const PerspectiveCropper = {
     isDragging: false,
     onCroppedCallback: null,
 
-    // Fully automatic perspective detection & 4-point homography warp (Zero manual steps)
+    // Fully automatic perspective detection & 4-point homography warp
     async autoWarp(imageSrc) {
         return new Promise((resolve) => {
             const img = new Image();
@@ -23,10 +23,10 @@ const PerspectiveCropper = {
                 try {
                     const quadPoints = this.detectLabelQuadCorners(img);
                     const warpedDataUrl = this.warpImagePoints(img, quadPoints);
-                    console.log('[AutoPerspective] Label photo automatically detected and straightened.');
+                    console.log('[AutoPerspective] High-precision perspective warp completed.');
                     resolve(warpedDataUrl);
                 } catch (e) {
-                    console.warn('[AutoPerspective] Auto-warp fallback note:', e.message);
+                    console.warn('[AutoPerspective] Auto-warp fallback:', e.message);
                     resolve(imageSrc);
                 }
             };
@@ -35,14 +35,13 @@ const PerspectiveCropper = {
         });
     },
 
-    // Automatic computer vision edge gradient & luminance boundary scanner
+    // Computer vision corner detection: multi-pass edge gradient & variance scanner
     detectLabelQuadCorners(img) {
         const w = img.width;
         const h = img.height;
 
-        // Downscaled analysis canvas for fast edge detection
-        const analW = 300;
-        const analH = Math.round(h * (300 / w));
+        const analW = 320;
+        const analH = Math.round(h * (320 / w));
         const canvas = document.createElement('canvas');
         canvas.width = analW;
         canvas.height = analH;
@@ -52,77 +51,77 @@ const PerspectiveCropper = {
         const imgData = ctx.getImageData(0, 0, analW, analH);
         const data = imgData.data;
 
-        // Default bounding boundaries (5% margin)
+        // Default bounds (5% margin)
         let topY = Math.round(analH * 0.05);
         let botY = Math.round(analH * 0.95);
         let leftX = Math.round(analW * 0.05);
         let rightX = Math.round(analW * 0.95);
 
         // Top boundary scan
-        for (let y = Math.round(analH * 0.02); y < analH * 0.35; y += 2) {
+        for (let y = Math.round(analH * 0.02); y < analH * 0.4; y += 2) {
             let edgeSum = 0;
             for (let x = Math.round(analW * 0.1); x < analW * 0.9; x += 4) {
                 const idx = (y * analW + x) * 4;
                 const nextIdx = ((y + 2) * analW + x) * 4;
-                const lum1 = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
-                const lum2 = (data[nextIdx] + data[nextIdx + 1] + data[nextIdx + 2]) / 3;
+                const lum1 = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                const lum2 = 0.299 * data[nextIdx] + 0.587 * data[nextIdx + 1] + 0.114 * data[nextIdx + 2];
                 edgeSum += Math.abs(lum1 - lum2);
             }
-            if (edgeSum / (analW * 0.2) > 18) {
-                topY = y;
+            if (edgeSum / (analW * 0.2) > 16) {
+                topY = Math.max(0, y - 4);
                 break;
             }
         }
 
         // Bottom boundary scan
-        for (let y = Math.round(analH * 0.98); y > analH * 0.65; y -= 2) {
+        for (let y = Math.round(analH * 0.98); y > analH * 0.6; y -= 2) {
             let edgeSum = 0;
             for (let x = Math.round(analW * 0.1); x < analW * 0.9; x += 4) {
                 const idx = (y * analW + x) * 4;
                 const prevIdx = ((y - 2) * analW + x) * 4;
-                const lum1 = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
-                const lum2 = (data[prevIdx] + data[prevIdx + 1] + data[prevIdx + 2]) / 3;
+                const lum1 = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                const lum2 = 0.299 * data[prevIdx] + 0.587 * data[prevIdx + 1] + 0.114 * data[prevIdx + 2];
                 edgeSum += Math.abs(lum1 - lum2);
             }
-            if (edgeSum / (analW * 0.2) > 18) {
-                botY = y;
+            if (edgeSum / (analW * 0.2) > 16) {
+                botY = Math.min(analH, y + 4);
                 break;
             }
         }
 
         // Left boundary scan
-        for (let x = Math.round(analW * 0.02); x < analW * 0.35; x += 2) {
+        for (let x = Math.round(analW * 0.02); x < analW * 0.4; x += 2) {
             let edgeSum = 0;
             for (let y = Math.round(analH * 0.1); y < analH * 0.9; y += 4) {
                 const idx = (y * analW + x) * 4;
                 const nextIdx = (y * analW + (x + 2)) * 4;
-                const lum1 = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
-                const lum2 = (data[nextIdx] + data[nextIdx + 1] + data[nextIdx + 2]) / 3;
+                const lum1 = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                const lum2 = 0.299 * data[nextIdx] + 0.587 * data[nextIdx + 1] + 0.114 * data[nextIdx + 2];
                 edgeSum += Math.abs(lum1 - lum2);
             }
-            if (edgeSum / (analH * 0.2) > 18) {
-                leftX = x;
+            if (edgeSum / (analH * 0.2) > 16) {
+                leftX = Math.max(0, x - 4);
                 break;
             }
         }
 
         // Right boundary scan
-        for (let x = Math.round(analW * 0.98); x > analW * 0.65; x -= 2) {
+        for (let x = Math.round(analW * 0.98); x > analW * 0.6; x -= 2) {
             let edgeSum = 0;
             for (let y = Math.round(analH * 0.1); y < analH * 0.9; y += 4) {
                 const idx = (y * analW + x) * 4;
                 const prevIdx = (y * analW + (x - 2)) * 4;
-                const lum1 = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
-                const lum2 = (data[prevIdx] + data[prevIdx + 1] + data[prevIdx + 2]) / 3;
+                const lum1 = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                const lum2 = 0.299 * data[prevIdx] + 0.587 * data[prevIdx + 1] + 0.114 * data[prevIdx + 2];
                 edgeSum += Math.abs(lum1 - lum2);
             }
-            if (edgeSum / (analH * 0.2) > 18) {
-                rightX = x;
+            if (edgeSum / (analH * 0.2) > 16) {
+                rightX = Math.min(analW, x + 4);
                 break;
             }
         }
 
-        // Scale to high-res source coordinates
+        // Scale coordinates to original resolution
         const scaleX = w / analW;
         const scaleY = h / analH;
 
@@ -134,23 +133,24 @@ const PerspectiveCropper = {
         ];
     },
 
-    // Warp image using explicit 4 points
+    // High-precision 4-point homography projective warp with bilinear subpixel interpolation
     warpImagePoints(img, srcPts) {
         const topW = Math.hypot(srcPts[1].x - srcPts[0].x, srcPts[1].y - srcPts[0].y);
         const botW = Math.hypot(srcPts[2].x - srcPts[3].x, srcPts[2].y - srcPts[3].y);
-        const outW = Math.max(100, Math.round(Math.max(topW, botW)));
+        const outW = Math.max(120, Math.round(Math.max(topW, botW)));
 
         const leftH = Math.hypot(srcPts[3].x - srcPts[0].x, srcPts[3].y - srcPts[0].y);
         const rightH = Math.hypot(srcPts[2].x - srcPts[1].x, srcPts[2].y - srcPts[1].y);
-        const outH = Math.max(100, Math.round(Math.max(leftH, rightH)));
+        const outH = Math.max(120, Math.round(Math.max(leftH, rightH)));
 
         const warpCanvas = document.createElement('canvas');
         warpCanvas.width = outW;
         warpCanvas.height = outH;
         const warpCtx = warpCanvas.getContext('2d');
 
-        const gridX = 16;
-        const gridY = 16;
+        // Subdivide into fine mesh grid (24x24) for smooth 3D perspective correction
+        const gridX = 24;
+        const gridY = 24;
 
         const getQuadPt = (u, v) => {
             const x = (1 - u) * (1 - v) * srcPts[0].x +
@@ -217,8 +217,8 @@ const PerspectiveCropper = {
         ctx.restore();
     },
 
-    // Interactive Manual Editor (Optional Fine-Tuning)
-    initEditor(canvasId, imageSrc, onCropped = null) {
+    // Interactive Manual Editor (Initializes on ORIGINAL UN-CROPPED photo)
+    initEditor(canvasId, originalImageSrc, onCropped = null) {
         this.canvas = typeof canvasId === 'string' ? document.getElementById(canvasId) : canvasId;
         if (!this.canvas) return;
         this.ctx = this.canvas.getContext('2d');
@@ -229,11 +229,18 @@ const PerspectiveCropper = {
         img.onload = () => {
             this.image = img;
             this.resizeCanvasToContainer();
-            this.resetDefaultPoints();
+            // Automatically detect initial quad on original image
+            const initialQuad = this.detectLabelQuadCorners(img);
+            const scaleX = this.canvas.width / img.width;
+            const scaleY = this.canvas.height / img.height;
+            this.points = initialQuad.map(pt => ({
+                x: pt.x * scaleX,
+                y: pt.y * scaleY
+            }));
             this.renderEditor();
             this.attachEventListeners();
         };
-        img.src = imageSrc;
+        img.src = originalImageSrc;
     },
 
     resizeCanvasToContainer() {
@@ -266,11 +273,14 @@ const PerspectiveCropper = {
         const h = this.canvas.height;
 
         this.ctx.clearRect(0, 0, w, h);
+        // Draw original un-cropped image
         this.ctx.drawImage(this.image, 0, 0, w, h);
 
+        // Draw semi-transparent dark mask over unselected region
         this.ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
         this.ctx.fillRect(0, 0, w, h);
 
+        // Clip selected quadrilateral region
         this.ctx.save();
         this.ctx.beginPath();
         this.ctx.moveTo(this.points[0].x, this.points[0].y);
@@ -280,11 +290,13 @@ const PerspectiveCropper = {
         this.ctx.closePath();
         this.ctx.clip();
 
+        // Redraw image inside clip region
         this.ctx.drawImage(this.image, 0, 0, w, h);
         this.ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
         this.ctx.fill();
         this.ctx.restore();
 
+        // Draw quadrilateral boundary lines
         this.ctx.strokeStyle = '#10B981';
         this.ctx.lineWidth = 2.5;
         this.ctx.beginPath();
@@ -295,6 +307,7 @@ const PerspectiveCropper = {
         this.ctx.closePath();
         this.ctx.stroke();
 
+        // Draw corner handles
         const labels = ['TL', 'TR', 'BR', 'BL'];
         this.points.forEach((pt, i) => {
             this.ctx.beginPath();

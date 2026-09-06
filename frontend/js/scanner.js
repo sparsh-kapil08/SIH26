@@ -347,30 +347,36 @@ function openPerspectiveCropper(dataUrl, callback) {
     }
 }
 
-async function addLabelImage(dataUrl) {
+async function addLabelImage(rawDataUrl) {
     if (scanState.labelImages.length >= 4) return;
 
     showLoading('✨ Auto-straightening & perspective correcting label...');
     try {
-        let finalUrl = dataUrl;
+        let warpedUrl = rawDataUrl;
         if (typeof PerspectiveCropper !== 'undefined' && PerspectiveCropper.autoWarp) {
-            finalUrl = await PerspectiveCropper.autoWarp(dataUrl);
+            warpedUrl = await PerspectiveCropper.autoWarp(rawDataUrl);
             console.log('[AutoPerspective] Image automatically perspective-corrected.');
         }
         hideLoading();
-        commitLabelImage(finalUrl);
+        commitLabelImage(rawDataUrl, warpedUrl);
     } catch (e) {
         hideLoading();
-        console.warn('[AutoPerspective] Fallback to original photo:', e.message);
-        commitLabelImage(dataUrl);
+        console.warn('[AutoPerspective] Fallback to original raw photo:', e.message);
+        commitLabelImage(rawDataUrl, rawDataUrl);
     }
 }
 
-function commitLabelImage(dataUrl) {
-    console.log('[Label] commitLabelImage called. Data length:', Math.round(dataUrl.length / 1024), 'KB');
+function commitLabelImage(originalUrl, warpedUrl) {
+    console.log('[Label] commitLabelImage called. Original size:', Math.round(originalUrl.length / 1024), 'KB');
     if (scanState.labelImages.length >= 4) return;
-    scanState.labelImages.push(dataUrl);
-    scanState.labelImage = scanState.labelImages[0];
+
+    const photoItem = {
+        original: originalUrl,
+        warped: warpedUrl || originalUrl
+    };
+
+    scanState.labelImages.push(photoItem);
+    scanState.labelImage = scanState.labelImages[0].warped;
 
     const preview = document.getElementById('capturedLabelPreview');
     const feedContainer = document.getElementById('cameraFeedContainer3') || document.getElementById('cameraFeedContainer');
@@ -378,7 +384,7 @@ function commitLabelImage(dataUrl) {
     const btnRetake = document.getElementById('btnRetakeLabel');
     const btnRunAi = document.getElementById('btnRunAiCheck');
 
-    if (preview) { preview.src = dataUrl; preview.style.display = 'none'; }
+    if (preview) { preview.src = photoItem.warped; preview.style.display = 'none'; }
     if (feedContainer) feedContainer.style.display = 'block';
     if (btnCapture) {
         btnCapture.style.display = scanState.labelImages.length < 4 ? 'inline-flex' : 'none';
@@ -407,7 +413,7 @@ function commitLabelImage(dataUrl) {
     }
     if (btnRunAi) { btnRunAi.disabled = false; btnRunAi.style.opacity = '1'; }
     renderLabelPhotoCollection();
-    console.log('[Label] Label photo committed after perspective check.');
+    console.log('[Label] Label photo committed after high-precision perspective check.');
 }
 
 function renderLabelPhotoCollection() {
@@ -418,31 +424,31 @@ function renderLabelPhotoCollection() {
     count.textContent = `${scanState.labelImages.length} / 4`;
     collection.style.display = scanState.labelImages.length ? 'block' : 'none';
     thumbnails.innerHTML = '';
-    scanState.labelImages.forEach((image, index) => {
+
+    scanState.labelImages.forEach((item, index) => {
         const wrapper = document.createElement('div');
         wrapper.style.cssText = 'position: relative; width: 100%; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid #CBD5E1; cursor: pointer;';
         
         const thumbnail = document.createElement('img');
-        thumbnail.src = image;
+        thumbnail.src = item.warped;
         thumbnail.alt = `Inspection photo ${index + 1}`;
         thumbnail.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
         
         const badge = document.createElement('div');
-        badge.style.cssText = 'position: absolute; bottom: 2px; left: 2px; right: 2px; background: rgba(15, 23, 42, 0.75); color: #10B981; font-size: 0.65rem; font-weight: 700; text-align: center; padding: 2px 4px; border-radius: 3px; backdrop-filter: blur(2px);';
-        badge.innerHTML = '✨ Auto-Warped';
+        badge.style.cssText = 'position: absolute; bottom: 2px; left: 2px; right: 2px; background: rgba(15, 23, 42, 0.85); color: #10B981; font-size: 0.65rem; font-weight: 700; text-align: center; padding: 2px 4px; border-radius: 3px; backdrop-filter: blur(2px);';
+        badge.innerHTML = '✏️ Drag Corners';
         
         wrapper.appendChild(thumbnail);
         wrapper.appendChild(badge);
 
-        // Optional fine-tune crop on click
+        // Click thumbnail to open manual cropper modal on ORIGINAL UN-CROPPED PHOTO!
         wrapper.onclick = () => {
-            if (confirm(`Fine-tune corner cropping for photo ${index + 1}?`)) {
-                openPerspectiveCropper(image, (updatedUrl) => {
-                    scanState.labelImages[index] = updatedUrl;
-                    scanState.labelImage = scanState.labelImages[0];
-                    renderLabelPhotoCollection();
-                });
-            }
+            console.log(`[Cropper] Opening cropper modal for photo ${index + 1} with ORIGINAL uncropped image.`);
+            openPerspectiveCropper(item.original, (newWarpedUrl) => {
+                item.warped = newWarpedUrl;
+                scanState.labelImage = scanState.labelImages[0].warped;
+                renderLabelPhotoCollection();
+            });
         };
 
         thumbnails.appendChild(wrapper);

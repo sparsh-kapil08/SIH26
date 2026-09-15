@@ -172,12 +172,11 @@ function renderScansTable(scans) {
             </td>
             <td><small class="text-muted">${dateStr}</small></td>
             <td>
-                <a href="report.html?scan=${s.id}" class="btn btn-sm btn-outline-primary">
+                <a href="report.html?scan=${s.id}" class="btn btn-sm btn-outline-primary dossier-link">
                     View Dossier 📄
                 </a>
             </td>
         `;
-
         tbody.appendChild(tr);
     });
 }

@@ -38,7 +38,8 @@ export default defineConfig({
         login: resolve(__dirname, 'login.html'),
         dashboard: resolve(__dirname, 'dashboard.html'),
         scan: resolve(__dirname, 'scan.html'),
-        report: resolve(__dirname, 'report.html')
+        report: resolve(__dirname, 'report.html'),
+        adminRules: resolve(__dirname, 'admin-rules.html')
       }
     }
   },

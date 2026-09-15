@@ -5,11 +5,17 @@
 // ============================================================
 
 // This file is also served as a static browser script on the multi-page build.
-const env = { VITE_BACKEND_URL: 'http://localhost:5000' };
+const env = { VITE_BACKEND_URL: '' };
+const configuredBackendUrl = env.VITE_BACKEND_URL || env.VITE_API_URL || env.BACKEND_URL || '';
+const runtimeBackendUrl = configuredBackendUrl || (
+    typeof window !== 'undefined' && window.location.protocol === 'file:'
+        ? 'http://localhost:5000'
+        : ''
+);
 
 const CONFIG = {
     // Backend API Base URL strictly fetched from Vite environment variables (.env / Vercel VITE_)
-    BACKEND_URL: env.VITE_BACKEND_URL || env.VITE_API_URL || env.BACKEND_URL || '',
+    BACKEND_URL: runtimeBackendUrl,
 
     get VISION_PROXY_URL() {
         return (this.BACKEND_URL || '').replace(/\/$/, '') + '/api/analyze-label';

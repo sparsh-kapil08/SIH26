@@ -625,6 +625,7 @@ async function runMultimodalAnalysis() {
 
             renderAiExtractionCards(response.data);
             renderComplianceSummary(evalResult);
+            renderLiveRulePieCharts(evalResult, evalResult.authenticity_status);
             goToStep(5);
             console.log('[Vision] ✅ Render complete. Step 4 populated.');
         } else {

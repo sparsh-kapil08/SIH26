@@ -16,6 +16,8 @@ const PerspectiveCropper = {
 
     liveAnimFrame: null,
     isLiveScanning: false,
+    liveFrameCount: 0,
+    liveDetectedPoints: null,
 
     // Real-time computer vision perspective detection loop for live camera feed
     startLivePerspectiveOverlay(videoEl, canvasEl, badgeEl) {
@@ -26,6 +28,8 @@ const PerspectiveCropper = {
         const ctx = canvasEl.getContext('2d');
         const analCanvas = document.createElement('canvas');
         const analCtx = analCanvas.getContext('2d');
+        const detectionInterval = 1;
+        const smoothingFactor = 0.72;
 
         let pulseAngle = 0;
 
@@ -48,8 +52,19 @@ const PerspectiveCropper = {
                 analCanvas.height = Math.round(vh * (240 / vw));
                 analCtx.drawImage(videoEl, 0, 0, analCanvas.width, analCanvas.height);
 
-                // Run fast edge detection on live camera frame
-                const corners = this.detectLabelQuadCornersFromCanvas(analCtx, analCanvas.width, analCanvas.height);
+                // Detect less often and smooth the result to prevent camera noise from moving the overlay.
+                this.liveFrameCount += 1;
+                if (!this.liveDetectedPoints || this.liveFrameCount % detectionInterval === 0) {
+                    const detectedCorners = this.detectLabelQuadCornersFromCanvas(analCtx, analCanvas.width, analCanvas.height);
+                    this.liveDetectedPoints = this.liveDetectedPoints
+                        ? this.liveDetectedPoints.map((point, index) => ({
+                            x: point.x + (detectedCorners[index].x - point.x) * smoothingFactor,
+                            y: point.y + (detectedCorners[index].y - point.y) * smoothingFactor
+                        }))
+                        : detectedCorners;
+                }
+
+                const corners = this.liveDetectedPoints;
 
                 // Scale detected points to live overlay canvas
                 const scaleX = cw / analCanvas.width;
@@ -115,6 +130,8 @@ const PerspectiveCropper = {
 
     stopLivePerspectiveOverlay() {
         this.isLiveScanning = false;
+        this.liveFrameCount = 0;
+        this.liveDetectedPoints = null;
         if (this.liveAnimFrame) {
             cancelAnimationFrame(this.liveAnimFrame);
             this.liveAnimFrame = null;
@@ -123,67 +140,98 @@ const PerspectiveCropper = {
 
     detectLabelQuadCornersFromCanvas(ctx, analW, analH) {
         const imgData = ctx.getImageData(0, 0, analW, analH);
-        const data = imgData.data;
+        const detectedPoints = this.detectQuadFromImageData(imgData.data, analW, analH);
+        const xValues = detectedPoints.map(point => point.x);
+        const yValues = detectedPoints.map(point => point.y);
+        const left = Math.max(0, Math.min(...xValues));
+        const right = Math.min(analW, Math.max(...xValues));
+        const top = Math.max(0, Math.min(...yValues));
+        const bottom = Math.min(analH, Math.max(...yValues));
 
-        let topY = Math.round(analH * 0.05);
-        let botY = Math.round(analH * 0.95);
-        let leftX = Math.round(analW * 0.05);
-        let rightX = Math.round(analW * 0.95);
-
-        for (let y = Math.round(analH * 0.02); y < analH * 0.4; y += 2) {
-            let edgeSum = 0;
-            for (let x = Math.round(analW * 0.1); x < analW * 0.9; x += 4) {
-                const idx = (y * analW + x) * 4;
-                const nextIdx = ((y + 2) * analW + x) * 4;
-                const lum1 = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-                const lum2 = 0.299 * data[nextIdx] + 0.587 * data[nextIdx + 1] + 0.114 * data[nextIdx + 2];
-                edgeSum += Math.abs(lum1 - lum2);
-            }
-            if (edgeSum / (analW * 0.2) > 16) { topY = Math.max(0, y - 4); break; }
-        }
-
-        for (let y = Math.round(analH * 0.98); y > analH * 0.6; y -= 2) {
-            let edgeSum = 0;
-            for (let x = Math.round(analW * 0.1); x < analW * 0.9; x += 4) {
-                const idx = (y * analW + x) * 4;
-                const prevIdx = ((y - 2) * analW + x) * 4;
-                const lum1 = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-                const lum2 = 0.299 * data[prevIdx] + 0.587 * data[prevIdx + 1] + 0.114 * data[prevIdx + 2];
-                edgeSum += Math.abs(lum1 - lum2);
-            }
-            if (edgeSum / (analW * 0.2) > 16) { botY = Math.min(analH, y + 4); break; }
-        }
-
-        for (let x = Math.round(analW * 0.02); x < analW * 0.4; x += 2) {
-            let edgeSum = 0;
-            for (let y = Math.round(analH * 0.1); y < analH * 0.9; y += 4) {
-                const idx = (y * analW + x) * 4;
-                const nextIdx = (y * analW + (x + 2)) * 4;
-                const lum1 = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-                const lum2 = 0.299 * data[nextIdx] + 0.587 * data[nextIdx + 1] + 0.114 * data[nextIdx + 2];
-                edgeSum += Math.abs(lum1 - lum2);
-            }
-            if (edgeSum / (analH * 0.2) > 16) { leftX = Math.max(0, x - 4); break; }
-        }
-
-        for (let x = Math.round(analW * 0.98); x > analW * 0.6; x -= 2) {
-            let edgeSum = 0;
-            for (let y = Math.round(analH * 0.1); y < analH * 0.9; y += 4) {
-                const idx = (y * analW + x) * 4;
-                const prevIdx = (y * analW + (x - 2)) * 4;
-                const lum1 = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-                const lum2 = 0.299 * data[prevIdx] + 0.587 * data[prevIdx + 1] + 0.114 * data[prevIdx + 2];
-                edgeSum += Math.abs(lum1 - lum2);
-            }
-            if (edgeSum / (analH * 0.2) > 16) { rightX = Math.min(analW, x + 4); break; }
-        }
-
+        // The live guide intentionally stays rectangular; perspective correction happens after capture.
         return [
-            { x: leftX, y: topY },
-            { x: rightX, y: topY },
-            { x: rightX, y: botY },
-            { x: leftX, y: botY }
+            { x: left, y: top },
+            { x: right, y: top },
+            { x: right, y: bottom },
+            { x: left, y: bottom }
         ];
+    },
+
+    detectQuadFromImageData(data, width, height) {
+        const luminance = (x, y) => {
+            const safeX = Math.max(0, Math.min(width - 1, Math.round(x)));
+            const safeY = Math.max(0, Math.min(height - 1, Math.round(y)));
+            const index = (safeY * width + safeX) * 4;
+            return 0.299 * data[index] + 0.587 * data[index + 1] + 0.114 * data[index + 2];
+        };
+
+        const findEdgeOnLine = (axis, fixed, start, end) => {
+            let best = start;
+            let bestScore = 0;
+            for (let position = start; position <= end; position += 2) {
+                let score = 0;
+                for (let offset = -4; offset <= 4; offset += 2) {
+                    const first = axis === 'x'
+                        ? luminance(position, fixed + offset)
+                        : luminance(fixed + offset, position);
+                    const second = axis === 'x'
+                        ? luminance(position + 2, fixed + offset)
+                        : luminance(fixed + offset, position + 2);
+                    score += Math.abs(first - second);
+                }
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = position;
+                }
+            }
+            return best;
+        };
+
+        const fitLine = samples => {
+            const meanX = samples.reduce((sum, point) => sum + point.x, 0) / samples.length;
+            const meanY = samples.reduce((sum, point) => sum + point.y, 0) / samples.length;
+            let numerator = 0;
+            let denominator = 0;
+            samples.forEach(point => {
+                numerator += (point.x - meanX) * (point.y - meanY);
+                denominator += (point.x - meanX) ** 2;
+            });
+            const slope = denominator ? numerator / denominator : 0;
+            return { slope, intercept: meanY - slope * meanX };
+        };
+
+        const xSamples = [0.2, 0.5, 0.8].map(ratio => Math.round(width * ratio));
+        const ySamples = [0.2, 0.5, 0.8].map(ratio => Math.round(height * ratio));
+        const topSamples = xSamples.map(x => ({ x, y: findEdgeOnLine('y', x, height * 0.03, height * 0.42) }));
+        const bottomSamples = xSamples.map(x => ({ x, y: findEdgeOnLine('y', x, height * 0.58, height * 0.97) }));
+        const leftSamples = ySamples.map(y => ({ x: findEdgeOnLine('x', y, width * 0.03, width * 0.42), y }));
+        const rightSamples = ySamples.map(y => ({ x: findEdgeOnLine('x', y, width * 0.58, width * 0.97), y }));
+
+        const top = fitLine(topSamples);
+        const bottom = fitLine(bottomSamples);
+        const left = fitLine(leftSamples);
+        const right = fitLine(rightSamples);
+        const intersect = (first, second) => {
+            const denominator = first.slope - second.slope;
+            if (Math.abs(denominator) < 0.001) return null;
+            const x = (second.intercept - first.intercept) / denominator;
+            return { x, y: first.slope * x + first.intercept };
+        };
+
+        const topLeft = intersect(top, left);
+        const topRight = intersect(top, right);
+        const bottomRight = intersect(bottom, right);
+        const bottomLeft = intersect(bottom, left);
+        const fallback = [
+            { x: width * 0.05, y: height * 0.05 },
+            { x: width * 0.95, y: height * 0.05 },
+            { x: width * 0.95, y: height * 0.95 },
+            { x: width * 0.05, y: height * 0.95 }
+        ];
+        const points = [topLeft, topRight, bottomRight, bottomLeft];
+        return points.every(point => point && point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height)
+            ? points
+            : fallback;
     },
 
     // Fully automatic perspective detection & 4-point homography warp

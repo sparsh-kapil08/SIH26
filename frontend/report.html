@@ -157,6 +157,34 @@
                 </div>
             </div>
 
+            <!-- VISUAL ANALYTICS: STATUTORY RULE COMPLIANCE CHARTS -->
+            <div class="report-section-title">
+                Statutory Rule Compliance Analytics (Inspector Breakdown)
+            </div>
+            <div class="rule-charts-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 28px;">
+                <!-- Chart 1: Passed Statutory Rules -->
+                <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; align-items: center; min-width: 0;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #047857; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.03em; text-align: center;">
+                        ✓ Rules Passed Breakdown
+                    </h3>
+                    <div style="position: relative; width: 200px; height: 200px; margin-bottom: 16px;">
+                        <canvas id="canvasPassedRulesPie" width="200" height="200"></canvas>
+                    </div>
+                    <div id="passedRulesLegend" style="width: 100%; display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem;"></div>
+                </div>
+
+                <!-- Chart 2: Failed Statutory Rules -->
+                <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; align-items: center; min-width: 0;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #B91C1C; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.03em; text-align: center;">
+                        ✗ Rules Failed Breakdown
+                    </h3>
+                    <div style="position: relative; width: 200px; height: 200px; margin-bottom: 16px;">
+                        <canvas id="canvasFailedRulesPie" width="200" height="200"></canvas>
+                    </div>
+                    <div id="failedRulesLegend" style="width: 100%; display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem;"></div>
+                </div>
+            </div>
+
             <!-- SECTION 1: BARCODE AUTHENTICITY CROSS-CHECK -->
             <div class="report-section-title">
                 1. Product Authenticity & Barcode Registry Cross-Check

@@ -274,6 +274,20 @@
                     </div>
                 </div>
 
+                <!-- Live Rule Compliance Charts -->
+                <div class="live-rule-charts">
+                    <div class="live-rule-chart-card">
+                        <h3 class="live-rule-chart-title live-rule-chart-title-pass">✓ Rules Passed Breakdown</h3>
+                        <canvas id="livePassedRulesPie" width="200" height="200"></canvas>
+                        <div id="livePassedRulesLegend" class="live-rule-chart-legend"></div>
+                    </div>
+                    <div class="live-rule-chart-card">
+                        <h3 class="live-rule-chart-title live-rule-chart-title-fail">✗ Rules Failed Breakdown</h3>
+                        <canvas id="liveFailedRulesPie" width="200" height="200"></canvas>
+                        <div id="liveFailedRulesLegend" class="live-rule-chart-legend"></div>
+                    </div>
+                </div>
+
                 <!-- Inspection Metadata Inputs (Store & Location) -->
                 <div style="background: #F1F5F9; border-radius: var(--radius-sm); padding: 16px; margin-bottom: 24px;">
                     <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--primary-navy);">📍 Inspection Location Details</h4>
@@ -371,6 +385,7 @@
     <script src="js/vision.js"></script>
     <script src="js/compliance.js"></script>
     <script src="js/perspective-cropper.js"></script>
+    <script src="js/dossier-charts.js"></script>
     <script src="js/scanner.js"></script>
 </body>
 </html>

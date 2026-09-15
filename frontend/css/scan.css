@@ -264,6 +264,94 @@
 .score-amber { background: #FEF3C7; color: #B45309; }
 .score-red { background: #FEE2E2; color: #B91C1C; }
 
+/* Live compliance charts shown before the dossier is saved. */
+.live-rule-charts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding: 18px;
+    margin-bottom: 24px;
+    background: #F8FAFC;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+}
+
+.live-rule-chart-card {
+    min-width: 0;
+    padding: 16px;
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.live-rule-chart-title {
+    margin-bottom: 12px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.live-rule-chart-title-pass { color: #047857; }
+.live-rule-chart-title-fail { color: #B91C1C; }
+
+.live-rule-chart-card canvas {
+    display: block;
+    width: 200px;
+    height: 200px;
+    max-width: 100%;
+    margin: 0 auto 14px;
+}
+
+.live-rule-chart-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+    font-size: 0.8rem;
+}
+
+.live-chart-legend-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 6px 8px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+}
+
+.live-chart-legend-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.live-chart-legend-label span {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 6px;
+    border-radius: 3px;
+    vertical-align: -1px;
+}
+
+.live-chart-empty {
+    padding: 8px;
+    color: #64748B;
+    text-align: center;
+}
+
+.live-chart-empty-success {
+    color: #065F46;
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    border-radius: 6px;
+}
+
 /* Loading Spinner Overlay */
 .loading-overlay {
     position: fixed;
@@ -293,6 +381,11 @@
 }
 
 @media (max-width: 480px) {
+    .live-rule-charts {
+        grid-template-columns: 1fr;
+        padding: 12px;
+    }
+
     .wizard-timeline {
         margin-right: -4px;
         margin-left: -4px;

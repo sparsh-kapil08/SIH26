@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    LEGAL METROLOGY COMPLIANCE CHECKER — MAIN STYLESHEET
    Department of Consumer Affairs (DoCA), Government of India
    ============================================================ */
@@ -416,12 +416,12 @@ svg {
     }
 }
 
-/* Small-screen layout adjustments */
-@media (max-width: 700px) {
+/* Small-screen layout adjustments & Mobile UI Responsiveness */
+@media (max-width: 768px) {
     .app-header {
         align-items: stretch;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
         padding: 12px 16px;
     }
 
@@ -432,7 +432,8 @@ svg {
     }
 
     .brand-title {
-        font-size: 0.98rem;
+        font-size: 1rem;
+        line-height: 1.25;
     }
 
     .brand-subtitle {
@@ -445,38 +446,44 @@ svg {
         height: 40px;
     }
 
-    .app-header > :last-child,
-    .app-header > :last-child > .btn,
-    .user-badge-header,
-    .user-badge-header > * {
+    .app-header > div:last-child {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
         width: 100%;
     }
 
-    .app-header > :last-child {
-        margin-top: 2px;
+    .app-header > div:last-child > .btn,
+    .app-header > div:last-child > a {
+        flex: 1 1 auto;
+        min-height: 44px;
+        justify-content: center;
     }
 
     .user-badge-header {
         align-items: stretch;
         flex-direction: column;
         gap: 8px;
+        width: 100%;
     }
 
     .officer-pill {
         text-align: center;
         overflow-wrap: anywhere;
         line-height: 1.35;
+        padding: 8px 12px;
     }
 
     .container,
     .container-narrow {
         width: 100%;
-        padding: 16px 12px;
+        padding: 14px 10px;
     }
 
     .card {
         padding: 16px;
         margin-bottom: 16px;
+        border-radius: var(--radius-sm);
     }
 
     .card-header {
@@ -494,43 +501,76 @@ svg {
     }
 
     .btn,
-    .btn-lg {
-        max-width: 100%;
+    .btn-lg,
+    .btn-sm {
+        min-height: 44px;
         white-space: normal;
         text-align: center;
         overflow-wrap: anywhere;
+        padding: 10px 14px;
     }
 
     .kpi-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
     }
 
     .modal-dialog {
-        width: calc(100% - 24px);
+        width: calc(100% - 20px);
+        margin: 10px;
     }
 
     .modal-header,
     .modal-body,
     .modal-footer {
-        padding-left: 16px;
-        padding-right: 16px;
+        padding-left: 14px;
+        padding-right: 14px;
     }
 
     .modal-header {
         align-items: flex-start;
         gap: 10px;
     }
+
+    .modal-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modal-footer > .btn {
+        width: 100%;
+    }
+
+    .rule-charts-container {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        padding: 12px !important;
+    }
+
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
+        margin-bottom: 16px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
 }
 
 @media (max-width: 480px) {
+    .container > .card[style*="padding: 36px"],
+    .container > .card[style*="padding:36px"],
     .container > .card[style*="padding: 40px"],
     .container > .card[style*="padding:40px"] {
-        padding: 24px 16px !important;
+        padding: 16px 12px !important;
     }
 
-    .container > .card[style*="padding: 40px"] h1,
-    .container > .card[style*="padding:40px"] h1 {
-        font-size: 1.65rem !important;
+    .container > .card h1 {
+        font-size: 1.25rem !important;
     }
 
     .container > div[style*="minmax(320px"],
@@ -545,14 +585,19 @@ svg {
         grid-template-columns: 1fr !important;
     }
 
-    .container > .card [style*="justify-content: space-between"],
-    .container > .card [style*="justify-content: flex-end"] {
+    .container > .card [style*="justify-content: space-between"] {
         align-items: stretch !important;
         flex-direction: column !important;
+        gap: 12px !important;
     }
 
-    .container > .card [style*="justify-content: space-between"] > *,
-    .container > .card [style*="justify-content: flex-end"] > * {
+    .container > .card [style*="justify-content: space-between"] > * {
         min-width: 0;
+        text-align: left !important;
+    }
+
+    .container > .card [style*="text-align: right"] {
+        text-align: left !important;
     }
 }
+

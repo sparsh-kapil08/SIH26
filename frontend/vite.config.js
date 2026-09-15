@@ -1,8 +1,9 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { resolve } from 'path';
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 
-function copyFrontendScripts() {
+function copyFrontendScripts(mode) {
+  const env = loadEnv(mode, __dirname, '');
   return {
     name: 'copy-frontend-scripts',
     closeBundle() {
@@ -14,21 +15,21 @@ function copyFrontendScripts() {
       const configPath = resolve(outputDir, 'config.js');
       const configSource = readFileSync(configPath, 'utf8');
       const buildEnv = JSON.stringify({
-        VITE_BACKEND_URL: process.env.VITE_BACKEND_URL || '',
-        VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || '',
-        VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || ''
+        VITE_BACKEND_URL: env.VITE_BACKEND_URL || '',
+        VITE_SUPABASE_URL: env.VITE_SUPABASE_URL || '',
+        VITE_SUPABASE_ANON_KEY: env.VITE_SUPABASE_ANON_KEY || ''
       });
       writeFileSync(configPath, configSource.replace(
-        "const env = { VITE_BACKEND_URL: 'http://localhost:5000' };",
+        "const env = { VITE_BACKEND_URL: '' };",
         `const env = ${buildEnv};`
       ));
     }
   };
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   root: '.',
-  plugins: [copyFrontendScripts()],
+  plugins: [copyFrontendScripts(mode)],
   build: {
     outDir: 'dist',
     emptyOutDir: true,
@@ -52,4 +53,4 @@ export default defineConfig({
       }
     }
   }
-});
+}));

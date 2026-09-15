@@ -3,6 +3,20 @@
 // (Rules 6, 7, 8, 9 & Label-Identified Fallback Authenticity)
 // ============================================================
 
+function getActiveMrp(mrp) {
+    if (!mrp || typeof mrp !== 'object') return mrp;
+
+    const activeValue = mrp.replacement_value || mrp.current_value || mrp.active_value || mrp.value;
+    if (!activeValue || activeValue === mrp.value) return mrp;
+
+    return {
+        ...mrp,
+        value: activeValue,
+        numeric_value: mrp.replacement_numeric_value ?? mrp.current_numeric_value ?? mrp.numeric_value,
+        numeric_val: mrp.replacement_numeric_val ?? mrp.current_numeric_val ?? mrp.numeric_val
+    };
+}
+
 const ComplianceEngine = {
     evaluateCompliance(visionData, barcodeData, physicalCalibration = {}) {
         const violations = [];
@@ -112,7 +126,7 @@ const ComplianceEngine = {
         }
 
         // 1e. Maximum Retail Price (MRP) (Rule 6(1)(f))
-        const mrp = visionData.mrp;
+        const mrp = getActiveMrp(visionData.mrp);
         const mrpPresent = Boolean(mrp && mrp.present && mrp.value);
         const hasTaxText = mrp?.has_tax_inclusion_statement || (mrp?.value && /incl/i.test(mrp.value));
 

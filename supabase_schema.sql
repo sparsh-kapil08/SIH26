@@ -171,3 +171,104 @@ CREATE POLICY "Public access for violations" ON public.violations FOR ALL USING 
 
 DROP POLICY IF EXISTS "Public access for reports" ON public.reports;
 CREATE POLICY "Public access for reports" ON public.reports FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================================
+-- 6. Compliance Rules Table (Admin-Managed Statutory Rules)
+--    Used by the Admin Rules Management CRUD portal.
+--    The compliance engine reads active rules from here at runtime.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.compliance_rules (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+
+  -- Rule identity
+  rule_reference TEXT NOT NULL UNIQUE,   -- e.g. "Rule 6(1)(a)"
+  name TEXT NOT NULL,                    -- Short display name
+  description TEXT,                      -- Full statutory text / description
+  category TEXT NOT NULL CHECK (category IN ('mandatory_declaration', 'format_rule'))
+             DEFAULT 'mandatory_declaration',
+
+  -- Compliance engine configuration
+  severity TEXT NOT NULL CHECK (severity IN ('critical', 'warning', 'info')) DEFAULT 'critical',
+  score_deduction INT NOT NULL DEFAULT 10 CHECK (score_deduction BETWEEN 0 AND 30),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+
+  -- Statutory details
+  penalty_section TEXT DEFAULT 'Section 36(1) of Legal Metrology Act, 2009',
+  statutory_act   TEXT DEFAULT 'Legal Metrology (Packaged Commodities) Rules, 2011',
+  suggestion      TEXT,     -- Remedial action text shown in the violation card
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Index for fast active-rule queries used by the compliance engine
+CREATE INDEX IF NOT EXISTS idx_compliance_rules_active ON public.compliance_rules (is_active, category);
+
+ALTER TABLE public.compliance_rules ENABLE ROW LEVEL SECURITY;
+
+-- Officers: read-only (to load rules during a scan)
+DROP POLICY IF EXISTS "Officers read compliance rules" ON public.compliance_rules;
+CREATE POLICY "Officers read compliance rules" ON public.compliance_rules
+  FOR SELECT USING (true);
+
+-- Admins: full CRUD
+DROP POLICY IF EXISTS "Admins manage compliance rules" ON public.compliance_rules;
+CREATE POLICY "Admins manage compliance rules" ON public.compliance_rules
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- ============================================================
+-- 7. Compliance Settings Table (Key-Value Store)
+--    Stores JSON arrays/objects for configurable compliance data:
+--      - key = 'prohibited_quantity_words'  → TEXT[]
+--      - key = 'second_schedule_pack_sizes' → JSONB object {category: [sizes]}
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.compliance_settings (
+  key TEXT PRIMARY KEY,         -- Unique setting key
+  value JSONB NOT NULL,         -- JSON value (array or object)
+  description TEXT,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.compliance_settings ENABLE ROW LEVEL SECURITY;
+
+-- Officers: read-only (to load settings during a scan)
+DROP POLICY IF EXISTS "Officers read compliance settings" ON public.compliance_settings;
+CREATE POLICY "Officers read compliance settings" ON public.compliance_settings
+  FOR SELECT USING (true);
+
+-- Admins: full CRUD
+DROP POLICY IF EXISTS "Admins manage compliance settings" ON public.compliance_settings;
+CREATE POLICY "Admins manage compliance settings" ON public.compliance_settings
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- ── Seed Default Prohibited Words (Rule 12) ───────────────────
+INSERT INTO public.compliance_settings (key, value, description) VALUES (
+  'prohibited_quantity_words',
+  '["minimum", "not less than", "average", "about", "approximately", "approx", "approx."]'::JSONB,
+  'Rule 12: Vague or exaggerating quantity words prohibited on packaged commodity labels.'
+) ON CONFLICT (key) DO NOTHING;
+
+-- ── Seed Default Second Schedule Pack Sizes (Rule 5) ─────────
+INSERT INTO public.compliance_settings (key, value, description) VALUES (
+  'second_schedule_pack_sizes',
+  '{
+    "Biscuits":      [25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000],
+    "Bread":         [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000],
+    "Tea":           [25, 50, 75, 100, 125, 150, 200, 250, 500, 1000],
+    "Coffee":        [25, 50, 75, 100, 150, 200, 250, 500, 1000],
+    "Toilet soap":   [25, 50, 75, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500],
+    "Laundry soap":  [50, 75, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+  }'::JSONB,
+  'Rule 5 & Second Schedule: Standardised pack size lists for notified commodity categories.'
+) ON CONFLICT (key) DO NOTHING;
+

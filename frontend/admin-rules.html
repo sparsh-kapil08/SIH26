@@ -1,0 +1,260 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compliance Rules Manager — Admin Portal</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .admin-tabs { display:flex; gap:6px; border-bottom:2px solid var(--border-color); margin-bottom:24px; overflow-x:auto; }
+        .admin-tab-btn { padding:10px 18px; font-size:0.88rem; font-weight:600; border:none; background:transparent; color:var(--text-secondary); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; white-space:nowrap; transition:all 0.2s; }
+        .admin-tab-btn.active { color:var(--primary-navy); border-bottom-color:var(--primary-navy); }
+        .admin-tab-btn:hover:not(.active) { color:var(--navy-light); background:#F1F5F9; }
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+        .rule-card { background:#FFFFFF; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:18px 20px; margin-bottom:14px; transition:box-shadow 0.2s; }
+        .rule-card:hover { box-shadow:var(--shadow-md); }
+        .rule-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
+        .rule-ref-badge { display:inline-flex; align-items:center; padding:3px 10px; font-size:0.78rem; font-weight:700; border-radius:10px; font-family:monospace; background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; flex-shrink:0; }
+        .severity-critical { background:#FEF2F2; color:#B91C1C; border-color:#FCA5A5; }
+        .severity-warning { background:#FFFBEB; color:#B45309; border-color:#FDE68A; }
+        .severity-info { background:#EFF6FF; color:#1D4ED8; border-color:#BFDBFE; }
+        .active-badge { background:#ECFDF5; color:#047857; border:1px solid #A7F3D0; border-radius:10px; padding:2px 10px; font-size:0.75rem; font-weight:700; }
+        .inactive-badge { background:#F1F5F9; color:#64748B; border:1px solid #CBD5E1; border-radius:10px; padding:2px 10px; font-size:0.75rem; font-weight:700; }
+        .rule-actions { display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap; }
+        .rule-meta { font-size:0.83rem; color:var(--text-secondary); margin-top:6px; }
+        .rule-score-tag { font-size:0.78rem; font-weight:700; color:#B91C1C; background:#FEF2F2; border:1px solid #FCA5A5; border-radius:10px; padding:2px 9px; flex-shrink:0; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        @media (max-width:600px) { .form-row { grid-template-columns:1fr; } }
+        .empty-state { text-align:center; padding:48px 20px; color:var(--text-secondary); }
+        .empty-state .emoji { font-size:2.5rem; margin-bottom:10px; }
+        .empty-state h4 { font-size:1.1rem; margin-bottom:6px; }
+        .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); display:flex; justify-content:center; align-items:center; z-index:9999; padding:16px; }
+        .modal-dialog { background:#FFFFFF; width:100%; max-width:680px; border-radius:var(--radius-md); box-shadow:var(--shadow-lg); overflow:hidden; }
+        .modal-header { background:var(--primary-navy); color:#FFFFFF; padding:16px 24px; display:flex; justify-content:space-between; align-items:center; }
+        .modal-close-btn { background:none; border:none; color:#FFFFFF; font-size:1.5rem; cursor:pointer; line-height:1; }
+        .modal-body { padding:24px; max-height:70vh; overflow-y:auto; }
+        .modal-footer { padding:14px 24px; background:#F8FAFC; border-top:1px solid var(--border-color); display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+        .toast { position:fixed; bottom:24px; right:24px; padding:12px 20px; border-radius:var(--radius-sm); font-size:0.9rem; font-weight:600; color:#FFFFFF; box-shadow:var(--shadow-lg); z-index:10001; animation:slideUp 0.3s ease; }
+        .toast-success { background:#059669; }
+        .toast-error { background:#DC2626; }
+        @keyframes slideUp { from { transform:translateY(24px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+        .prohibited-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+        .prohibited-tag { display:inline-flex; align-items:center; gap:6px; background:#FEF2F2; color:#B91C1C; border:1px solid #FCA5A5; border-radius:8px; padding:3px 10px; font-size:0.8rem; font-weight:600; }
+        .prohibited-tag button { background:none; border:none; cursor:pointer; color:#B91C1C; font-size:1rem; padding:0; line-height:1; }
+        .search-bar-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; align-items:center; }
+        .search-bar-row input { flex:1; min-width:180px; }
+        .search-bar-row select { min-width:160px; }
+        .pack-category-card { background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:16px; margin-bottom:14px; }
+        .pack-sizes-input { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+        .pack-size-tag { display:inline-flex; align-items:center; gap:4px; background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; border-radius:8px; padding:2px 8px; font-size:0.8rem; font-weight:600; }
+        .pack-size-tag button { background:none; border:none; cursor:pointer; color:#1D4ED8; font-size:0.95rem; padding:0; line-height:1; }
+    </style>
+</head>
+<body>
+    <div class="national-accent-bar"></div>
+    <header class="app-header">
+        <a href="dashboard.html" class="brand-container">
+            <svg class="emblem-img" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="46" stroke="#FF9933" stroke-width="4"/>
+                <circle cx="50" cy="50" r="28" stroke="#138808" stroke-width="3"/>
+                <circle cx="50" cy="50" r="8" fill="#0B2545"/>
+                <path d="M50 22 L50 78 M22 50 L78 50 M30 30 L70 70 M30 70 L70 30" stroke="#0056B3" stroke-width="2"/>
+            </svg>
+            <div>
+                <div class="brand-title">Legal Metrology — Admin Portal</div>
+            </div>
+        </a>
+        <div class="user-badge-header">
+            <span id="userNameDisplay" class="officer-pill">Admin</span>
+            <span class="badge badge-admin">Rules Manager</span>
+            <a href="dashboard.html" class="btn btn-outline-primary btn-sm" style="color:#FFFFFF; border-color:rgba(255,255,255,0.4);">Dashboard</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="card" style="padding:20px 24px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+                <h1 style="font-size:1.3rem; font-weight:800; color:var(--primary-navy); margin-bottom:4px;">
+                    Compliance Rules Management
+                </h1>
+                <p class="text-secondary" style="font-size:0.88rem;">
+                    Add, edit, disable, or delete statutory rules checked during AI label inspections.
+                    Changes take effect on the next scan.
+                </p>
+            </div>
+            <button type="button" id="btnAddRule" class="btn btn-primary" onclick="openAddRuleModal()">+ Add New Rule</button>
+        </div>
+
+        <div class="card">
+            <div class="admin-tabs">
+                <button class="admin-tab-btn active" data-tab="mandatory-declarations">Mandatory Declarations (Rule 6)</button>
+                <button class="admin-tab-btn" data-tab="format-rules">Format Rules (7-13)</button>
+                <button class="admin-tab-btn" data-tab="prohibited-words">Prohibited Words (Rule 12)</button>
+                <button class="admin-tab-btn" data-tab="pack-sizes">Standard Pack Sizes (Rule 5)</button>
+            </div>
+
+            <div id="tab-mandatory-declarations" class="tab-panel active">
+                <div class="search-bar-row">
+                    <input type="text" id="searchDecl" class="form-control" placeholder="Filter by rule reference or name..." oninput="renderRulesTab('mandatory_declaration')">
+                    <select id="filterSeverityDecl" class="form-control" onchange="renderRulesTab('mandatory_declaration')">
+                        <option value="all">All Severities</option>
+                        <option value="critical">Critical</option>
+                        <option value="warning">Warning</option>
+                        <option value="info">Info</option>
+                    </select>
+                    <select id="filterActiveDecl" class="form-control" onchange="renderRulesTab('mandatory_declaration')">
+                        <option value="all">Active &amp; Inactive</option>
+                        <option value="true">Active Only</option>
+                        <option value="false">Inactive Only</option>
+                    </select>
+                </div>
+                <div id="declRulesList"><div class="empty-state"><div class="emoji">Loading...</div></div></div>
+            </div>
+
+            <div id="tab-format-rules" class="tab-panel">
+                <div class="search-bar-row">
+                    <input type="text" id="searchFmt" class="form-control" placeholder="Filter by rule reference or name..." oninput="renderRulesTab('format_rule')">
+                </div>
+                <div id="fmtRulesList"><div class="empty-state"><div class="emoji">Loading...</div></div></div>
+            </div>
+
+            <div id="tab-prohibited-words" class="tab-panel">
+                <p class="text-secondary" style="font-size:0.88rem; margin-bottom:16px;">
+                    Manage vague or exaggerating quantity words prohibited by <strong>Rule 12</strong>.
+                    Any of these words found on a label triggers a critical violation.
+                </p>
+                <div id="prohibitedWordsTags" class="prohibited-tags">
+                    <div style="color:var(--text-secondary)">Loading...</div>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;">
+                    <input type="text" id="newProhibitedWordInput" class="form-control"
+                        placeholder="Enter new prohibited word/phrase..."
+                        style="max-width:340px;"
+                        onkeydown="if(event.key==='Enter') addProhibitedWord()">
+                    <button type="button" class="btn btn-danger" onclick="addProhibitedWord()">+ Add Word</button>
+                </div>
+                <div style="margin-top:16px;">
+                    <button type="button" id="btnSaveProhibited" class="btn btn-primary" onclick="saveProhibitedWords()">Save Changes</button>
+                </div>
+            </div>
+
+            <div id="tab-pack-sizes" class="tab-panel">
+                <p class="text-secondary" style="font-size:0.88rem; margin-bottom:16px;">
+                    Manage <strong>Second Schedule Standard Pack Sizes (Rule 5)</strong>. Products with non-listed quantities must carry a mandatory disclaimer.
+                </p>
+                <div id="packSizesList"><div class="empty-state"><div class="emoji">Loading...</div></div></div>
+                <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Add Commodity Category</label>
+                        <input type="text" id="newCategoryInput" class="form-control" placeholder="e.g. Sugar" style="min-width:220px;">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="addPackCategory()">+ Add Category</button>
+                </div>
+                <div style="margin-top:16px;">
+                    <button type="button" id="btnSavePackSizes" class="btn btn-primary" onclick="savePackSizes()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Rule Modal -->
+    <div id="ruleModal" class="modal-overlay" style="display:none;">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="ruleModalTitle" style="font-size:1rem; font-weight:700;">Add New Compliance Rule</h3>
+                <button class="modal-close-btn" onclick="closeRuleModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="ruleId">
+                <div class="form-row" style="margin-bottom:14px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Rule Reference *</label>
+                        <input type="text" id="ruleRef" class="form-control" placeholder="e.g. Rule 6(1)(a)">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Category</label>
+                        <select id="ruleCategory" class="form-control">
+                            <option value="mandatory_declaration">Mandatory Declaration (Rule 6)</option>
+                            <option value="format_rule">Format Rule (Rules 7-13)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rule Name *</label>
+                    <input type="text" id="ruleName" class="form-control" placeholder="e.g. Manufacturer / Packer Identity">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description / Statutory Text</label>
+                    <textarea id="ruleDesc" class="form-control" rows="3" placeholder="Full statutory description of this requirement..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Severity</label>
+                        <select id="ruleSeverity" class="form-control">
+                            <option value="critical">Critical (Section 36 prosecution)</option>
+                            <option value="warning">Warning (advisory)</option>
+                            <option value="info">Info (disclosure only)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Score Deduction (0-30 pts)</label>
+                        <input type="number" id="ruleScoreDeduction" class="form-control" placeholder="e.g. 20" min="0" max="30">
+                    </div>
+                </div>
+                <div class="form-row" style="margin-top:14px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Penalty Section</label>
+                        <input type="text" id="rulePenaltySection" class="form-control" placeholder="Section 36(1) of Legal Metrology Act, 2009">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Statutory Act Reference</label>
+                        <input type="text" id="ruleStatutoryAct" class="form-control" placeholder="Legal Metrology Rules, 2011">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:14px;">
+                    <label class="form-label">Suggestion / Remedial Action</label>
+                    <textarea id="ruleSuggestion" class="form-control" rows="2" placeholder="Recommended corrective action for the manufacturer..."></textarea>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:14px;">
+                    <input type="checkbox" id="ruleIsActive" checked style="width:18px; height:18px; cursor:pointer;">
+                    <label for="ruleIsActive" style="font-weight:600; cursor:pointer;">Rule is Active (enabled during scans)</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary" onclick="closeRuleModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveRule()">Save Rule</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div id="deleteModal" class="modal-overlay" style="display:none;">
+        <div class="modal-dialog" style="max-width:440px;">
+            <div class="modal-header" style="background:var(--danger);">
+                <h3 style="font-size:1rem; font-weight:700;">Confirm Rule Deletion</h3>
+                <button class="modal-close-btn" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>You are about to permanently delete the rule:</p>
+                <div id="deleteRulePreview" style="background:#FEF2F2; border:1px solid #FCA5A5; border-radius:var(--radius-sm); padding:12px; margin:14px 0; font-weight:600; color:#B91C1C;"></div>
+                <p class="text-secondary" style="font-size:0.88rem;">
+                    This cannot be undone. The compliance engine will stop checking this rule from the next scan onwards.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDeleteRule()">Delete Rule</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/admin-rules.js"></script>
+</body>
+</html>

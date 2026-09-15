@@ -559,6 +559,11 @@ function initStepHandlers() {
             const record = {
                 product_name: scanState.visionData?.product_name?.value || scanState.barcodeData?.productName || 'Inspected Commodity',
                 brand: scanState.visionData?.manufacturer_name?.value || scanState.barcodeData?.brand || 'Unknown',
+                extracted_mrp: scanState.visionData?.mrp?.replacement_value
+                    || scanState.visionData?.mrp?.current_value
+                    || scanState.visionData?.mrp?.active_value
+                    || scanState.visionData?.mrp?.value
+                    || null,
                 barcode: scanState.barcodeData?.barcode || null,
                 overall_score: scanState.complianceReport?.overall_score || 0,
                 compliance_status: scanState.complianceReport?.compliance_status || 'NON_COMPLIANT',

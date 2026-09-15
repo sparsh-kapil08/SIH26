@@ -57,6 +57,20 @@ function normalizeOverallStatus(status) {
     return 'pending';
 }
 
+function toUuid(id) {
+    if (!id) return null;
+    const str = String(id).trim();
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str)) {
+        return str;
+    }
+    let hex = '';
+    for (let i = 0; i < str.length; i++) {
+        hex += str.charCodeAt(i).toString(16);
+    }
+    hex = (hex + '00000000000000000000000000000000').slice(0, 32);
+    return `${hex.slice(0,8)}-${hex.slice(8,12)}-4${hex.slice(13,16)}-8${hex.slice(17,20)}-${hex.slice(20,32)}`;
+}
+
 const DB = {
     async getCurrentUser() {
         const client = getSupabase();
@@ -105,16 +119,13 @@ const DB = {
 
     async saveCompleteScan(scanData, declarations = [], violations = []) {
         const client = getSupabase();
-        let officerId = scanData.officer_id || null;
-        if (client && !officerId) {
-            try {
-                const { data: { session } } = await client.auth.getSession();
-                officerId = session?.user?.id || null;
-            } catch (err) {
-                console.warn('Supabase officer lookup note:', err.message);
-            }
+        let rawOfficerId = scanData.officer_id;
+        if (!rawOfficerId) {
+            const localUser = DB.getLocalUser();
+            rawOfficerId = localUser?.id;
         }
-        const scanId = scanData.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(scanData.id)
+        const officerId = toUuid(rawOfficerId);
+        const scanId = scanData.id && toUuid(scanData.id)
             ? scanData.id
             : (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : '00000000-0000-4000-8000-' + Date.now().toString().padStart(12, '0'));
         const scanRecord = {
@@ -146,9 +157,10 @@ const DB = {
             updated_at: new Date().toISOString()
         };
 
-        // Cache locally
+        // Cache locally with both raw and mapped officer_id
         LocalStorageDB.saveScan({
             ...scanRecord,
+            raw_officer_id: rawOfficerId,
             declarations,
             violations
         });
@@ -203,6 +215,8 @@ const DB = {
 
     async getScansList(role = 'officer', userId = null) {
         const client = getSupabase();
+        const mappedOfficerUuid = toUuid(userId);
+
         if (client) {
             try {
                 let query = client
@@ -210,20 +224,28 @@ const DB = {
                     .select('*, declarations(*), violations(*)')
                     .order('created_at', { ascending: false });
                 
-                if (role === 'officer' && userId && userId !== 'demo-officer-01') {
-                    // Include older records created before officer_id was persisted.
-                    query = query.or(`officer_id.eq.${userId},officer_id.is.null`);
+                if (role === 'officer' && mappedOfficerUuid) {
+                    // Inspectors only see scans where officer_id matches their UUID or demo scans
+                    query = query.or(`officer_id.eq.${mappedOfficerUuid},officer_id.is.null`);
                 }
 
                 const { data, error } = await query;
                 if (error) throw error;
-                return data || [];
+                if (data && data.length > 0) return data;
             } catch (err) {
                 console.error('Supabase getScansList failed:', err);
             }
         }
 
         const local = LocalStorageDB.getScans();
+        if (role === 'officer' && userId) {
+            return local.filter(s =>
+                s.officer_id === mappedOfficerUuid ||
+                s.raw_officer_id === userId ||
+                s.officer_id === userId ||
+                !s.officer_id
+            );
+        }
         return local;
     },
 

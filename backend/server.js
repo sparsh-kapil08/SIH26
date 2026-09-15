@@ -84,6 +84,7 @@ app.post('/api/analyze-label', async (req, res) => {
 
         const promptText = `You are an expert Legal Metrology Enforcement Inspector for the Department of Consumer Affairs (DoCA), Government of India.
 Examine all supplied photos of the same packaged commodity and evaluate mandatory declarations under the Legal Metrology Act, 2009 and Legal Metrology (Packaged Commodities) Rules, 2011. Combine evidence across photos: identify the product, manufacturer, quantity, dates, MRP, consumer-care details, and country of origin. When barcode data is absent, identify and match the product using visible packaging text, brand marks, product appearance, and consistent declarations across the photos. Do not treat multiple views as different products unless they conflict; report conflicts in general_observations.
+For MRP, inspect the printed price carefully for strike-throughs, overwriting, stickers, or a company-issued revised price. If an older MRP is crossed out and a new MRP is printed by the company, the new non-crossed-out MRP is the active legal MRP and MUST be returned in mrp.value and mrp.numeric_value. Put the crossed-out price only in mrp.original_value and set mrp.original_is_crossed_out to true. Never report the crossed-out price as the active MRP.
 Extract each mandatory declaration and return ONLY a valid, raw JSON object (without markdown fences, raw JSON only).
 JSON Schema:
 {
@@ -92,7 +93,7 @@ JSON Schema:
   "manufacturer_address": { "value": "string or null", "present": true, "confidence": 0.88, "bounding_box": {"x": 0.1, "y": 0.74, "w": 0.8, "h": 0.08}, "notes": "string" },
   "net_quantity": { "value": "500g", "present": true, "confidence": 0.94, "unit": "g", "numeric_value": 500, "bounding_box": {"x": 0.1, "y": 0.35, "w": 0.35, "h": 0.08}, "isolated_free_area": true, "notes": "string" },
   "mfg_date": { "value": "08/2026", "present": true, "confidence": 0.90, "bounding_box": {"x": 0.55, "y": 0.35, "w": 0.35, "h": 0.08}, "notes": "string" },
-  "mrp": { "value": "Rs. 140.00 (incl. of all taxes)", "present": true, "confidence": 0.95, "numeric_value": 140, "has_tax_inclusion_statement": true, "bounding_box": {"x": 0.1, "y": 0.46, "w": 0.45, "h": 0.09}, "notes": "string" },
+    "mrp": { "value": "Rs. 140.00 (incl. of all taxes)", "present": true, "confidence": 0.95, "numeric_value": 140, "has_tax_inclusion_statement": true, "original_value": "string or null", "original_is_crossed_out": false, "replacement_value": "string or null", "bounding_box": {"x": 0.1, "y": 0.46, "w": 0.45, "h": 0.09}, "notes": "string" },
   "consumer_care": { "value": "1800-11-4000 / care@doca.gov.in", "present": true, "confidence": 0.89, "has_phone": true, "has_email": true, "bounding_box": {"x": 0.1, "y": 0.84, "w": 0.8, "h": 0.08}, "notes": "string" },
   "country_of_origin": { "value": "India", "present": true, "is_imported": false },
   "importer_details": { "value": null, "present": false },

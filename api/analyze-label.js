@@ -102,7 +102,7 @@ TASK: RETURN ONLY A RAW VALID JSON OBJECT WITH THIS EXACT SCHEMA:
   "fssai_license": { "value": "14-digit string or null", "present": true },
   "net_quantity": { "value": "500 g", "numeric_val": 500, "unit": "g", "present": true, "confidence": 0.94 },
   "mfg_date": { "value": "08/2026", "present": true, "confidence": 0.90 },
-  "mrp": { "value": "Rs. 140.00 (incl. of all taxes)", "numeric_val": 140.00, "present": true, "has_tax_inclusion_statement": true },
+    "mrp": { "value": "Rs. 140.00 (incl. of all taxes)", "numeric_val": 140.00, "present": true, "has_tax_inclusion_statement": true, "original_value": "string or null", "original_is_crossed_out": false, "replacement_value": "string or null" },
   "consumer_care": { "value": "1800-11-4000 / care@doca.gov.in", "present": true },
   "dimensions": { "value": "string or null", "present": true },
 

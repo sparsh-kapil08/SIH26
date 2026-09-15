@@ -63,6 +63,7 @@ module.exports = async (req, res) => {
 
         const promptText = `You are an expert Legal Metrology Enforcement Inspector for the Department of Consumer Affairs (DoCA), Government of India.
 You analyze photographs of packaged commodity labels under India's Legal Metrology (Packaged Commodities) Rules, 2011. You have complete knowledge of the rule text. Apply it precisely — do not invent requirements not stated here, and do not silently skip a check; if something cannot be determined from the image alone, state so explicitly.
+For MRP, inspect carefully for strike-throughs, overwriting, stickers, or a company-issued revised price. If an older MRP is crossed out and a new MRP is printed by the company, the new non-crossed-out MRP is the active legal MRP and MUST be returned in mrp.value and mrp.numeric_val. Put the crossed-out price only in mrp.original_value and set mrp.original_is_crossed_out to true. Never report the crossed-out price as the active MRP.
 
 ===========================================================================
 LEGAL METROLOGY (PACKAGED COMMODITIES) RULES, 2011 REFERENCE
@@ -102,7 +103,7 @@ TASK: RETURN ONLY A RAW VALID JSON OBJECT WITH THIS EXACT SCHEMA:
   "fssai_license": { "value": "14-digit string or null", "present": true },
   "net_quantity": { "value": "500 g", "numeric_val": 500, "unit": "g", "present": true, "confidence": 0.94 },
   "mfg_date": { "value": "08/2026", "present": true, "confidence": 0.90 },
-  "mrp": { "value": "Rs. 140.00 (incl. of all taxes)", "numeric_val": 140.00, "present": true, "has_tax_inclusion_statement": true },
+    "mrp": { "value": "Rs. 140.00 (incl. of all taxes)", "numeric_val": 140.00, "present": true, "has_tax_inclusion_statement": true, "original_value": "string or null", "original_is_crossed_out": false, "replacement_value": "string or null" },
   "consumer_care": { "value": "1800-11-4000 / care@doca.gov.in", "present": true },
   "dimensions": { "value": "string or null", "present": true },
 

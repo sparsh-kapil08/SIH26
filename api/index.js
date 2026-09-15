@@ -227,6 +227,7 @@ app.all(['/api/analyze-label', '/analyze-label', '/api/analyze-product', '/analy
 Examine this packaged commodity label image. Perform two simultaneous tasks:
 1. Extract every mandatory declaration under Rule 6, 7, 8, 9 of the Legal Metrology (Packaged Commodities) Rules, 2011.
 2. If NO barcode is visible or provided, perform LABEL-BASED AUTHENTICITY AUDIT by extracting FSSAI license number (14 digits), manufacturer postal PIN code (6 digits), registered trademark symbols, and consumer grievance contact cell.
+For MRP, inspect carefully for strike-throughs, overwriting, stickers, or a company-issued revised price. If an older MRP is crossed out and a new MRP is printed by the company, the new non-crossed-out MRP is the active legal MRP and MUST be returned in mrp.value and mrp.numeric_value. Put the crossed-out price only in mrp.original_value and set mrp.original_is_crossed_out to true. Never report the crossed-out price as the active MRP.
 
 Return ONLY a valid, raw JSON object (without markdown fences, raw JSON only).
 JSON Schema:
@@ -237,7 +238,7 @@ JSON Schema:
   "fssai_license": { "value": "14-digit string or null", "present": true/false, "is_valid_14_digit": true/false, "notes": "string" },
   "net_quantity": { "value": "500g", "present": true, "confidence": 0.94, "unit": "g", "numeric_value": 500, "bounding_box": {"x": 0.1, "y": 0.35, "w": 0.35, "h": 0.08}, "isolated_free_area": true, "notes": "string" },
   "mfg_date": { "value": "08/2026", "present": true, "confidence": 0.90, "bounding_box": {"x": 0.55, "y": 0.35, "w": 0.35, "h": 0.08}, "notes": "string" },
-  "mrp": { "value": "Rs. 140.00 (incl. of all taxes)", "present": true, "confidence": 0.95, "numeric_value": 140, "has_tax_inclusion_statement": true, "bounding_box": {"x": 0.1, "y": 0.46, "w": 0.45, "h": 0.09}, "notes": "string" },
+    "mrp": { "value": "Rs. 140.00 (incl. of all taxes)", "present": true, "confidence": 0.95, "numeric_value": 140, "has_tax_inclusion_statement": true, "original_value": "string or null", "original_is_crossed_out": false, "replacement_value": "string or null", "bounding_box": {"x": 0.1, "y": 0.46, "w": 0.45, "h": 0.09}, "notes": "string" },
   "consumer_care": { "value": "1800-11-4000 / care@doca.gov.in", "present": true, "confidence": 0.89, "has_phone": true, "has_email": true, "bounding_box": {"x": 0.1, "y": 0.84, "w": 0.8, "h": 0.08}, "notes": "string" },
   "country_of_origin": { "value": "India", "present": true, "is_imported": false },
   "importer_details": { "value": null, "present": false },

@@ -1,6 +1,7 @@
 ﻿require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { tryOpenAiVision, openAiConfigured } = require('../api/openai-vision-fallback');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -66,9 +67,9 @@ app.post('/api/analyze-label', async (req, res) => {
             });
         }
 
-        if (!GEMINI_API_KEY) {
+        if (!GEMINI_API_KEY && !openAiConfigured) {
             console.error('[Vision API] GEMINI_API_KEY is missing.');
-            return res.status(503).json({ success: false, error: 'Gemini API key is not configured on the server.' });
+            return res.status(503).json({ success: false, error: 'No vision API provider is configured. Set GEMINI_API_KEY or OPENAI_API_KEY.' });
         }
 
         const imageParts = images.map(image => {
@@ -151,7 +152,12 @@ JSON Schema:
             }
         }
 
-        throw lastError || new Error('All Gemini Vision model attempts failed');
+        if (openAiConfigured) {
+            const fallback = await tryOpenAiVision({ images, promptText });
+            if (fallback) return res.json(fallback);
+        }
+
+        throw lastError || new Error('All configured vision model attempts failed');
 
     } catch (err) {
         console.error('[Vision API] Request failed:', {

@@ -1,4 +1,5 @@
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const { tryOpenAiVision, openAiConfigured } = require('../../api/openai-vision-fallback');
 const SUPPORTED_MODELS = [
     'gemini-3-flash-preview',
     'gemini-3.1-flash-lite',
@@ -45,9 +46,9 @@ module.exports = async (req, res) => {
             });
         }
 
-        if (!GEMINI_API_KEY) {
+        if (!GEMINI_API_KEY && !openAiConfigured) {
             console.error('[Vision API] GEMINI_API_KEY is missing.');
-            return res.status(503).json({ success: false, error: 'Gemini API key is not configured on the server.' });
+            return res.status(503).json({ success: false, error: 'No vision API provider is configured. Set GEMINI_API_KEY or OPENAI_API_KEY.' });
         }
 
         const imageParts = images.map(image => {
@@ -222,7 +223,12 @@ TASK: RETURN ONLY A RAW VALID JSON OBJECT WITH THIS EXACT SCHEMA:
             return res.status(200).json(result);
         }
 
-        throw lastError || new Error('All Gemini Vision model attempts failed');
+        if (openAiConfigured) {
+            const fallback = await tryOpenAiVision({ images, promptText });
+            if (fallback) return res.status(200).json(fallback);
+        }
+
+        throw lastError || new Error('All configured vision model attempts failed');
 
     } catch (err) {
         console.error('[Vision API] Request failed:', {

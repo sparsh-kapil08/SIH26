@@ -217,35 +217,6 @@
                 </div>
 
                 <!-- Calibration Marker Tool (Rule 7 Font Size Measurement) -->
-                <div class="calibration-box">
-                    <h4 style="color: var(--primary-navy); font-size: 0.95rem; margin-bottom: 8px;">
-                        📐 Rule 7 Font-Size Calibration Tool (Pixel-to-Millimeter Conversion)
-                    </h4>
-                    <p class="text-secondary" style="font-size: 0.85rem; margin-bottom: 12px;">
-                        Place a reference marker (e.g. coin or credit card edge 54mm) next to the package to accurately measure font heights in mm against statutory Rule 7 thresholds.
-                    </p>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: flex-end;">
-                        <div>
-                            <label class="form-label small">Reference Width (mm)</label>
-                            <input type="number" id="inputCalibrationMm" class="form-control" value="50">
-                        </div>
-                        <div>
-                            <label class="form-label small">Measured Screen Width (px)</label>
-                            <input type="number" id="inputCalibrationPx" class="form-control" value="1250">
-                        </div>
-                        <div>
-                            <label class="form-label small">Calculated Ratio</label>
-                            <div id="displayPxPerMm" style="font-weight: 700; padding: 10px; background: #FFFFFF; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
-                                25.0 px/mm
-                            </div>
-                        </div>
-                        <div>
-                            <button type="button" id="btnApplyCalibration" class="btn btn-sm btn-primary" style="height: 42px;">
-                                Apply Calibration
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
                 <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
                     <button type="button" onclick="goToStep(2)" class="btn btn-outline-primary">

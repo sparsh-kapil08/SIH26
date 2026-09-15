@@ -57,6 +57,14 @@ function normalizeOverallStatus(status) {
     return 'pending';
 }
 
+function getActiveMrpValue(mrp) {
+    if (!mrp || typeof mrp !== 'object') return mrp || null;
+    const activeValue = mrp.replacement_value || mrp.current_value || mrp.active_value
+        || (!mrp.original_is_crossed_out ? mrp.value : null);
+    if (typeof activeValue !== 'string') return activeValue || null;
+    return activeValue.replace(/(Rs\.?|₹)\s*(\d+(?:\.\d+)?)/i, (_, currency, amount) => `${currency} ${Math.round(Number(amount))}`);
+}
+
 function toUuid(id) {
     if (!id) return null;
     const str = String(id).trim();
@@ -120,6 +128,14 @@ const DB = {
     async saveCompleteScan(scanData, declarations = [], violations = []) {
         const client = getSupabase();
         let rawOfficerId = scanData.officer_id;
+        if (!rawOfficerId && client) {
+            try {
+                const { data: { user } } = await client.auth.getUser();
+                rawOfficerId = user?.id || null;
+            } catch (e) {
+                console.warn('Supabase auth user lookup:', e);
+            }
+        }
         if (!rawOfficerId) {
             const localUser = DB.getLocalUser();
             rawOfficerId = localUser?.id;
@@ -136,7 +152,7 @@ const DB = {
             db_manufacturer: scanData.db_manufacturer || scanData.brand || null,
             extracted_product_name: scanData.extracted_product_name || scanData.product_name || scanData.vision_raw?.product_name?.value || null,
             extracted_manufacturer: scanData.extracted_manufacturer || scanData.brand || scanData.vision_raw?.manufacturer_name?.value || null,
-            extracted_mrp: scanData.extracted_mrp || scanData.vision_raw?.mrp?.value || null,
+            extracted_mrp: scanData.extracted_mrp || getActiveMrpValue(scanData.vision_raw?.mrp) || null,
             extracted_address: scanData.extracted_address || scanData.vision_raw?.manufacturer_address?.value || null,
             extracted_mfg_date: scanData.extracted_mfg_date || scanData.vision_raw?.mfg_date?.value || null,
             extracted_net_qty: scanData.extracted_net_qty || scanData.vision_raw?.net_quantity?.value || null,
@@ -154,6 +170,7 @@ const DB = {
             warning_count: violations.filter(v => v.severity === 'warning').length,
             authenticity_status: normalizeAuthenticityStatus(scanData.authenticity_status),
             authenticity_notes: scanData.authenticity_notes || null,
+            created_at: scanData.created_at || new Date().toISOString(),
             updated_at: new Date().toISOString()
         };
 
@@ -231,7 +248,17 @@ const DB = {
 
                 const { data, error } = await query;
                 if (error) throw error;
-                if (data && data.length > 0) return data;
+                const remoteScans = data || [];
+                const localScans = LocalStorageDB.getScans();
+                const merged = new Map();
+
+                [...localScans, ...remoteScans].forEach(scan => {
+                    if (scan?.id) merged.set(scan.id, { ...merged.get(scan.id), ...scan });
+                });
+
+                return [...merged.values()].sort((a, b) =>
+                    new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+                );
             } catch (err) {
                 console.error('Supabase getScansList failed:', err);
             }

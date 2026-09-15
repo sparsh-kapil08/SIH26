@@ -6,14 +6,25 @@
 function getActiveMrp(mrp) {
     if (!mrp || typeof mrp !== 'object') return mrp;
 
-    const activeValue = mrp.replacement_value || mrp.current_value || mrp.active_value || mrp.value;
-    if (!activeValue || activeValue === mrp.value) return mrp;
+    const activeValue = typeof getActiveMrpValue === 'function'
+        ? getActiveMrpValue(mrp)
+        : (mrp.replacement_value || mrp.current_value || mrp.active_value
+            || (!mrp.original_is_crossed_out ? mrp.value : null));
+    if (!activeValue) return { ...mrp, value: null, present: false };
+    const replacementNumericValue = mrp.replacement_numeric_value ?? mrp.current_numeric_value
+        ?? mrp.replacement_numeric_val ?? mrp.current_numeric_val;
+    const activeTextNumber = typeof activeValue === 'string'
+        ? activeValue.match(/(?:Rs\.?|₹)\s*(\d+(?:\.\d+)?)/i)?.[1]
+        : null;
+    const numericValue = replacementNumericValue ?? activeTextNumber
+        ?? mrp.numeric_value ?? mrp.numeric_val;
+    const normalizedNumericValue = Number.isFinite(Number(numericValue)) ? Math.round(Number(numericValue)) : numericValue;
 
     return {
         ...mrp,
         value: activeValue,
-        numeric_value: mrp.replacement_numeric_value ?? mrp.current_numeric_value ?? mrp.numeric_value,
-        numeric_val: mrp.replacement_numeric_val ?? mrp.current_numeric_val ?? mrp.numeric_val
+        numeric_value: normalizedNumericValue,
+        numeric_val: normalizedNumericValue
     };
 }
 

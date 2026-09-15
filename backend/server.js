@@ -104,7 +104,6 @@ JSON Schema:
   "general_observations": "Label contains standard mandatory declarations required under Rule 6."
 }`;
 
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
         const payload = {
             contents: [{
                 parts: [{ text: promptText }, ...imageParts]
@@ -117,56 +116,42 @@ JSON Schema:
             }
         };
 
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        const modelsToTry = [GEMINI_MODEL, ...SUPPORTED_GEMINI_MODELS]
+            .filter((model, index, models) => models.indexOf(model) === index);
+        let lastError;
 
-        console.log('[Vision API] Gemini response:', {
-            model: GEMINI_MODEL,
-            status: response.status,
-            ok: response.ok
-        });
+        for (const modelName of modelsToTry) {
+            try {
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-        if (!response.ok) {
-            const errText = await response.text();
-            throw new Error(`Gemini API HTTP ${response.status}: ${errText}`);
+                console.log('[Vision API] Gemini response:', { model: modelName, status: response.status, ok: response.ok });
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(`Gemini API (${modelName}) HTTP ${response.status}: ${errText}`);
+                }
+
+                const result = await response.json();
+                const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!rawText) throw new Error(`Empty response from Gemini Vision (${modelName})`);
+
+                let cleanJson = rawText.trim();
+                if (cleanJson.startsWith('```json')) cleanJson = cleanJson.slice(7);
+                if (cleanJson.startsWith('```')) cleanJson = cleanJson.slice(3);
+                if (cleanJson.endsWith('```')) cleanJson = cleanJson.slice(0, -3);
+                const parsed = JSON.parse(cleanJson.trim());
+                return res.json({ success: true, data: parsed, modelUsed: modelName, rawResponse: result });
+            } catch (modelError) {
+                console.error(`[Vision API] Model ${modelName} attempt failed:`, modelError.message);
+                lastError = modelError;
+            }
         }
 
-        const result = await response.json();
-        const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-        console.log('[Vision API] Gemini result shape:', {
-            model: GEMINI_MODEL,
-            candidateCount: result.candidates?.length || 0,
-            finishReason: result.candidates?.[0]?.finishReason,
-            hasContent: Boolean(result.candidates?.[0]?.content),
-            hasText: Boolean(rawText),
-            promptFeedback: result.promptFeedback
-        });
-        if (!rawText) throw new Error('Empty response from Gemini Vision');
-
-        let cleanJson = rawText.trim();
-        if (cleanJson.startsWith('```json')) cleanJson = cleanJson.slice(7);
-        if (cleanJson.startsWith('```')) cleanJson = cleanJson.slice(3);
-        if (cleanJson.endsWith('```')) cleanJson = cleanJson.slice(0, -3);
-        cleanJson = cleanJson.trim();
-
-        let parsed;
-        try {
-            parsed = JSON.parse(cleanJson);
-        } catch (parseError) {
-            console.error('[Vision API] Gemini returned invalid JSON:', {
-                parseError: parseError.message,
-                rawTextPreview: cleanJson.slice(0, 500)
-            });
-            throw parseError;
-        }
-        res.json({
-            success: true,
-            data: parsed,
-            rawResponse: result
-        });
+        throw lastError || new Error('All Gemini Vision model attempts failed');
 
     } catch (err) {
         console.error('[Vision API] Request failed:', {

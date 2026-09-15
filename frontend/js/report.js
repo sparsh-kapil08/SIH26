@@ -146,13 +146,13 @@ function renderViolationsList(violations) {
         card.innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h5 class="mb-0 text-danger font-weight-bold">
-                    Item #${idx + 1}: ${v.rule_reference} — ${v.title}
+                    Item #${idx + 1}: ${v.rule_reference || v.rule_ref || 'Compliance Check'} — ${v.title || v.rule_name || 'Compliance Violation'}
                 </h5>
                 <span class="badge ${v.severity === 'critical' ? 'badge-danger' : 'badge-warning'}">
-                    ${v.severity.toUpperCase()}
+                    ${(v.severity || 'warning').toUpperCase()}
                 </span>
             </div>
-            <p class="text-dark mb-2">${v.description}</p>
+            <p class="text-dark mb-2">${v.description || 'Statutory requirement not satisfied.'}</p>
             <div class="statutory-box">
                 <div><strong>Statutory Legal Reference:</strong> ${v.penalty_section || 'Section 36(1) of Legal Metrology Act, 2009'}</div>
                 ${v.suggestion ? `<div><strong>Prescribed Remedial Action:</strong> ${v.suggestion}</div>` : ''}
@@ -195,7 +195,7 @@ function showLegalNoticeModal() {
     const ref = document.getElementById('reportRefNumber').textContent;
     const store = currentScan.store_name || 'The Retailer / Manufacturer';
 
-    const vioText = violations.map((v, i) => `${i + 1}. Violation of ${v.rule_reference}: ${v.title} (${v.description})`).join('\n\n');
+    const vioText = violations.map((v, i) => `${i + 1}. Violation of ${v.rule_reference || v.rule_ref || 'Compliance Check'}: ${v.title || v.rule_name || 'Compliance Violation'} (${v.description || 'Statutory requirement not satisfied.'})`).join('\n\n');
 
     content.textContent = `
 GOVERNMENT OF INDIA

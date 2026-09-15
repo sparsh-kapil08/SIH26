@@ -8,6 +8,7 @@
     justify-content: space-between;
     margin-bottom: 28px;
     position: relative;
+    min-width: 0;
 }
 
 .wizard-timeline::before {
@@ -195,6 +196,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 6px;
+    gap: 10px;
 }
 
 .dec-value {
@@ -288,4 +290,42 @@
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+    .wizard-timeline {
+        margin-right: -4px;
+        margin-left: -4px;
+    }
+
+    .wizard-timeline::before {
+        left: 14px;
+        right: 14px;
+    }
+
+    .step-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 0.82rem;
+    }
+
+    .step-label {
+        max-width: 58px;
+        font-size: 0.65rem;
+        overflow-wrap: anywhere;
+    }
+
+    .camera-container {
+        min-height: 0;
+    }
+
+    .dec-header,
+    .vio-header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .calibration-box {
+        padding: 12px;
+    }
 }

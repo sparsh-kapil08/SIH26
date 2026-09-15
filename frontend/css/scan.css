@@ -2,22 +2,26 @@
    SCANNER & CAMERA WORKFLOW STYLES
    ============================================================ */
 
-/* Step Wizard Progress Bar */
+/* Step Wizard Progress Bar: Exactly 56px Height */
 .wizard-timeline {
+    height: 56px;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    margin-bottom: 28px;
+    margin-bottom: 4px;
     position: relative;
+    padding: 0 4px;
 }
 
 .wizard-timeline::before {
     content: '';
     position: absolute;
-    top: 18px;
+    top: 50%;
+    transform: translateY(-50%);
     left: 20px;
     right: 20px;
-    height: 3px;
-    background: var(--border-color);
+    height: 2px;
+    background: rgba(226, 232, 240, 0.6);
     z-index: 1;
 }
 
@@ -25,46 +29,39 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     position: relative;
     z-index: 2;
-    cursor: default;
+    cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
 }
 
 .step-circle {
-    width: 38px;
-    height: 38px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: #FFFFFF;
-    border: 3px solid var(--border-color);
+    border: 2px solid #CBD5E1;
     color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.95rem;
-    margin-bottom: 8px;
-    transition: all 0.3s ease;
+    font-size: 13px;
+    margin-bottom: 0;
+    transition: all 0.2s ease;
 }
 
 .step-label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+    display: none !important; /* Hide labels under circles to prevent squishing */
 }
 
 .step-indicator.active .step-circle {
-    background: var(--navy-light);
-    border-color: var(--primary-navy);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
     color: #FFFFFF;
-    box-shadow: 0 0 0 4px rgba(19, 62, 104, 0.2);
-}
-
-.step-indicator.active .step-label {
-    color: var(--primary-navy);
-    font-weight: 700;
+    box-shadow: 0 0 0 4px rgba(194, 98, 15, 0.2);
 }
 
 .step-indicator.completed .step-circle {
@@ -73,8 +70,14 @@
     color: #FFFFFF;
 }
 
-.step-indicator.completed .step-label {
-    color: var(--primary-navy);
+/* Dynamic Stepper Subtitle directly below circles */
+.stepper-sublabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748B;
+    text-align: center;
+    margin-bottom: 18px;
+    letter-spacing: 0.01em;
 }
 
 /* Wizard Steps Content Switcher */
@@ -92,18 +95,17 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Camera Viewport */
+/* Camera Viewport: aspect-ratio 3/4 */
 .camera-container {
     position: relative;
     width: 100%;
-    max-width: 680px;
-    min-height: 280px;
-    margin: 0 auto 20px auto;
-    background: #111827;
-    border-radius: var(--radius-md);
+    max-width: 480px;
+    aspect-ratio: 3/4;
+    margin: 0 auto 16px auto;
+    background: #07172C;
+    border-radius: var(--radius-camera);
     overflow: hidden;
-    box-shadow: var(--shadow-lg);
-    aspect-ratio: 4/3;
+    box-shadow: var(--shadow-md);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -117,27 +119,87 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    background: #111827;
+    background: #07172C;
 }
 
 .camera-preview-img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background: #0F172A;
+    background: #07172C;
+}
+
+/* Overlaid CAMERA LIVE Pill with Pulsing Green Dot */
+.camera-live-pill {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(7, 23, 44, 0.85);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #10B981;
+    letter-spacing: 0.06em;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.pulsing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10B981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulseGreenDot 1.6s infinite;
+}
+
+@keyframes pulseGreenDot {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Live Perspective Pill */
+.live-perspective-pill {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(7, 23, 44, 0.85);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #10B981;
+    letter-spacing: 0.04em;
+    z-index: 10;
+    max-width: 90%;
+    white-space: nowrap;
+    pointer-events: none;
 }
 
 /* Scan Reticle & Animated Laser */
 .scan-reticle {
     position: absolute;
-    top: 15%;
+    top: 20%;
     left: 10%;
     right: 10%;
-    bottom: 15%;
+    bottom: 20%;
     border: 2px dashed rgba(255, 255, 255, 0.7);
     border-radius: 12px;
     pointer-events: none;
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
     overflow: hidden;
 }
 
@@ -163,13 +225,56 @@
     100% { top: 5%; }
 }
 
-/* Calibration Guide Box */
-.calibration-box {
-    background: #F1F5F9;
-    border: 1px dashed #94A3B8;
-    border-radius: var(--radius-sm);
+/* De-Nested Calibration Panel (Rule 7) */
+.calibration-panel {
+    background: #F8FAFC;
+    border: none;
+    border-top: 1px solid var(--border-color);
+    border-radius: var(--radius-card);
     padding: 16px;
-    margin-top: 16px;
+    margin-top: 24px;
+}
+
+.calibration-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+@media (max-width: 768px) {
+    .calibration-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+}
+
+.calibration-ratio-box {
+    padding: 8px 12px;
+    background: #FFFFFF;
+    border-radius: var(--radius-sm);
+    border: 1px dashed #CBD5E1;
+    text-align: center;
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Sticky Bottom Navigation Bar (Step 3 & Summary) */
+.sticky-bottom-nav {
+    position: sticky;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    padding: 12px 16px;
+    border-top: 1px solid #E2E8F0;
+    z-index: 30;
+    display: flex;
+    gap: 12px;
+    margin: 20px -20px -20px -20px;
+    border-bottom-left-radius: var(--radius-card);
+    border-bottom-right-radius: var(--radius-card);
 }
 
 /* Declarations Breakdown Item */
@@ -289,3 +394,55 @@
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* ============================================================
+   MOBILE RESPONSIVE ENHANCEMENTS FOR SCANNER (max-width: 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+    .step-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        width: 100% !important;
+    }
+
+    .step-actions .btn {
+        width: 100% !important;
+        min-height: 48px !important;
+    }
+
+    .sticky-bottom-nav {
+        margin: 16px -16px -16px -16px !important;
+        padding: 10px 16px !important;
+    }
+
+    .sticky-bottom-nav .btn {
+        min-height: 48px !important;
+    }
+
+    /* Barcode Details Box on Step 2 */
+    .barcode-details-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .barcode-tags-container {
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    .barcode-tags-container .badge {
+        width: 100% !important;
+        min-height: 36px !important;
+    }
+
+    /* Inspection location inputs grid */
+    .inspection-meta-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+}
+
+

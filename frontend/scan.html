@@ -16,54 +16,56 @@
     <div class="national-accent-bar"></div>
 
     <header class="app-header">
-        <a href="dashboard.html" class="brand-container">
-            <svg class="emblem-img" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="46" stroke="#FF9933" stroke-width="4"/>
-                <circle cx="50" cy="50" r="28" stroke="#138808" stroke-width="3"/>
-                <circle cx="50" cy="50" r="8" fill="#0B2545"/>
-                <path d="M50 22 L50 78 M22 50 L78 50 M30 30 L70 70 M30 70 L70 30" stroke="#0056B3" stroke-width="2"/>
-            </svg>
-            <div>
-                <div class="brand-title">उपभोक्ता मामले विभाग | Department of Consumer Affairs</div>
-                <div class="brand-subtitle">Automated Legal Metrology Compliance Scanner (SIH26034)</div>
-            </div>
-        </a>
-        <div class="user-badge-header">
-            <div class="officer-pill">
-                <span id="officerNameDisplay">Inspector Rajesh Sharma</span>
-                <span style="opacity: 0.6; margin: 0 4px;">|</span>
-                <span id="badgeDisplay" style="font-family: monospace;">LM-DEL-8942</span>
-            </div>
-            <a href="dashboard.html" class="btn btn-outline-primary btn-sm" style="color: #FFFFFF; border-color: rgba(255,255,255,0.4);">
-                ← Back to Dashboard
+        <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+            <a href="dashboard.html" class="btn-icon-only" aria-label="Back to Dashboard" title="Back to Dashboard" style="color: #FFFFFF; text-decoration: none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </a>
+            <a href="dashboard.html" class="brand-container" style="flex: 1; min-width: 0;">
+                <svg class="emblem-img" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="14" cy="14" r="13" stroke="#FF9933" stroke-width="1.5"/>
+                    <circle cx="14" cy="14" r="8" stroke="#138808" stroke-width="1"/>
+                    <circle cx="14" cy="14" r="2.5" fill="#0056B3"/>
+                    <path d="M14 6v16M6 14h16M8.34 8.34l11.32 11.32M8.34 19.66L19.66 8.34" stroke="#0056B3" stroke-width="0.75"/>
+                </svg>
+                <div class="brand-title-stack">
+                    <span class="brand-title-hi">उपभोक्ता मामले विभाग</span>
+                    <span class="brand-title-en">Department of Consumer Affairs</span>
+                </div>
             </a>
         </div>
     </header>
 
+    <!-- Officer Sub-bar: Exactly 36px Height -->
+    <div class="officer-subbar">
+        <div class="officer-subbar-left">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span id="officerNameDisplay">Inspector Rajesh Sharma</span>
+        </div>
+        <div class="officer-subbar-right">
+            <span class="officer-badge-id" id="badgeDisplay">LM-DEL-8942</span>
+        </div>
+    </div>
+
     <main class="container">
-        <!-- Step Wizard Progress Bar -->
+        <!-- Step Wizard Progress Bar (56px) -->
         <div class="wizard-timeline">
             <div id="stepInd1" class="step-indicator active">
                 <div class="step-circle">1</div>
-                <div class="step-label">Barcode Scan</div>
             </div>
             <div id="stepInd2" class="step-indicator">
                 <div class="step-circle">2</div>
-                <div class="step-label">Registry Check</div>
             </div>
             <div id="stepInd3" class="step-indicator">
                 <div class="step-circle">3</div>
-                <div class="step-label">Label & Calibration</div>
             </div>
             <div id="stepInd4" class="step-indicator">
                 <div class="step-circle">4</div>
-                <div class="step-label">AI Extraction</div>
             </div>
             <div id="stepInd5" class="step-indicator">
                 <div class="step-circle">5</div>
-                <div class="step-label">Compliance Dossier</div>
             </div>
         </div>
+        <div id="stepperStepLabel" class="stepper-sublabel">Step 1 of 5 · Barcode Capture</div>
 
         <!-- ============================================================
              STEP 1: BARCODE SCAN
@@ -72,8 +74,8 @@
             <div class="card">
                 <div class="card-header">
                     <div>
-                        <h2 class="card-title">Step 1: Live Camera Barcode Capture</h2>
-                        <p class="text-secondary" style="font-size: 0.88rem;">
+                        <h2 class="card-title">Live Camera Barcode Capture</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem; margin: 4px 0 0 0;">
                             Hold the product's barcode in front of the camera for real-time GTIN check-digit validation.
                         </p>
                     </div>
@@ -81,9 +83,13 @@
                 </div>
 
                 <div class="camera-container" id="cameraFeedContainer">
+                    <div id="cameraLivePill" class="camera-live-pill">
+                        <span class="pulsing-dot"></span>
+                        <span>CAMERA LIVE</span>
+                    </div>
                     <video id="cameraFeed" class="camera-video" playsinline autoplay muted width="1280" height="720"></video>
                     <div id="cameraPlaceholder" style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94A3B8;font-size:0.9rem;gap:10px;pointer-events:none;">
-                        <div style="font-size:2.5rem;">📷</div>
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                         <div>Initializing camera...</div>
                         <div style="font-size:0.75rem;opacity:0.7;">Grant camera permission when prompted</div>
                     </div>
@@ -92,12 +98,13 @@
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
-                    <button type="button" id="btnManualBarcode" class="btn btn-primary">
-                        ⌨️ Enter Barcode Manually
+                <div class="step-actions" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+                    <button type="button" id="btnManualBarcode" class="btn btn-secondary-light" style="width: 100%; min-height: 48px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg>
+                        Enter Barcode Manually
                     </button>
-                    <button type="button" id="btnSkipBarcode" class="btn btn-outline-primary">
-                        ⏭️ Skip to Direct Label OCR (Graceful Fallback)
+                    <button type="button" id="btnSkipBarcode" class="btn btn-tertiary" style="width: 100%; min-height: 40px;">
+                        Skip to Label OCR (Direct Fallback) →
                     </button>
                 </div>
             </div>
@@ -110,31 +117,32 @@
             <div class="card">
                 <div class="card-header">
                     <div>
-                        <h2 class="card-title">Step 2: Product Barcode & Authenticity Lookup</h2>
-                        <p class="text-secondary" style="font-size: 0.88rem;">
+                        <h2 class="card-title">Product Barcode & Authenticity Lookup</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem; margin: 4px 0 0 0;">
                             Offline check-digit algorithm validation and official product registry cross-referencing.
                         </p>
                     </div>
                 </div>
 
-                <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-card); padding: 18px; margin-bottom: 20px;">
+                    <div class="barcode-details-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                         <div>
                             <div class="text-muted small">Scanned Barcode (GTIN)</div>
-                            <h3 id="displayBarcode" style="font-family: monospace; font-size: 1.5rem; color: var(--primary-navy);">8901030383854</h3>
+                            <h3 id="displayBarcode" style="font-family: ui-monospace, monospace; font-size: 1.5rem; color: var(--primary-navy); font-weight: 700; margin-top: 2px;">8901030383854</h3>
                             <div id="displayBarcodeType" class="text-muted small">EAN-13 (GS1 India)</div>
                         </div>
-                        <div style="display: flex; gap: 8px;">
+                        <div class="barcode-tags-container" style="display: flex; gap: 8px;">
                             <span id="badgeCheckDigit" class="badge badge-success">✓ Check-Digit Valid</span>
                             <span id="badgeRegistry" class="badge badge-success">✓ Registered in Database</span>
                         </div>
                     </div>
 
                     <!-- DB Info Card -->
-                    <div id="dbInfoCard" style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 18px;">
-                        <h4 style="color: var(--navy-light); font-size: 1rem; margin-bottom: 12px;">
-                            🏛️ Official Registered Metadata (Source: <span id="dbSource">Open Food Facts / GS1</span>)
-                        </h4>
+                    <div id="dbInfoCard" style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--navy-light);">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2 2 7h20L12 2z"/></svg>
+                            <h4 style="font-size: 0.95rem; font-weight: 700; margin: 0;">Official Registered Metadata (<span id="dbSource">Open Food Facts / GS1</span>)</h4>
+                        </div>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
                             <div>
                                 <span class="text-muted small">Registered Product Name:</span>
@@ -152,16 +160,16 @@
                     </div>
 
                     <!-- Unregistered Note (if not found in DB) -->
-                    <div id="unregisteredNote" style="display: none; background: #FFFBEB; border: 1px solid #FCD34D; border-radius: var(--radius-sm); padding: 14px; color: #92400E;">
-                        <strong>ℹ️ Notice:</strong> This barcode is not indexed in public product databases. The pipeline will automatically fall back to complete label compliance analysis via Multimodal OCR.
+                    <div id="unregisteredNote" style="display: none; background: #FFFBEB; border: 1px solid #FCD34D; border-radius: var(--radius-sm); padding: 14px; color: #92400E; margin-top: 14px;">
+                        <strong>Notice:</strong> This barcode is not indexed in public product databases. The pipeline will automatically fall back to complete label compliance analysis via Multimodal OCR.
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                    <button type="button" onclick="goToStep(1)" class="btn btn-outline-primary">
+                <div class="step-actions" style="display: flex; gap: 12px;">
+                    <button type="button" onclick="goToStep(1)" class="btn btn-secondary-light" style="flex: 1; min-height: 48px;">
                         ← Rescan Barcode
                     </button>
-                    <button type="button" id="btnProceedToLabel" class="btn btn-success btn-lg">
+                    <button type="button" id="btnProceedToLabel" class="btn btn-primary" style="flex: 1; min-height: 48px;">
                         Proceed to Label Capture →
                     </button>
                 </div>
@@ -172,43 +180,48 @@
              STEP 3: LABEL CAPTURE & FONT CALIBRATION
              ============================================================ -->
         <div id="stepContent3" class="wizard-step-content">
-            <div class="card">
+            <div class="card" style="padding-bottom: 0;">
                 <div class="card-header">
                     <div>
-                        <h2 class="card-title">Step 3: Capture Principal Display Panel (PDP) Photo</h2>
-                        <p class="text-secondary" style="font-size: 0.88rem;">
+                        <h2 class="card-title">Capture Principal Display Panel (PDP)</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem; margin: 4px 0 0 0;">
                             Photograph the product's printed label containing mandatory Rule 6 declarations and font sizes.
                         </p>
                     </div>
                 </div>
 
-                <div class="camera-container" style="max-height: 480px;">
+                <div class="camera-container" style="max-height: 460px;">
                     <img id="capturedLabelPreview" class="camera-preview-img" style="display: none;" alt="Captured Label Preview">
                     <div id="cameraFeedContainer3" style="position:absolute;top:0;left:0;width:100%;height:100%;">
-                        <video id="labelCameraFeed" class="camera-video" playsinline autoplay muted width="1280" height="720" style="width:100%;height:100%;object-fit:cover;display:block;background:#111827;"></video>
+                        <video id="labelCameraFeed" class="camera-video" playsinline autoplay muted width="1280" height="720" style="width:100%;height:100%;object-fit:cover;display:block;background:#07172C;"></video>
                         <canvas id="labelLivePerspectiveCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;"></canvas>
-                        <div id="liveEdgeBadge" style="position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.85);color:#10B981;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:700;letter-spacing:0.5px;backdrop-filter:blur(4px);z-index:6;pointer-events:none;display:none;border:1px solid rgba(16,185,129,0.4);">
-                            🎯 Live Perspective Detection: ACTIVE
+                        <div id="liveEdgeBadge" class="live-perspective-pill" style="display: none;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+                            <span>Live Perspective: Active</span>
                         </div>
                         <div id="labelCameraPlaceholder" style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94A3B8;font-size:0.9rem;gap:8px;pointer-events:none;">
-                            <div style="font-size:2rem;">📷</div>
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                             <div>Camera starting for label capture...</div>
                         </div>
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: center; gap: 14px; margin-bottom: 20px; flex-wrap: wrap;">
-                    <button type="button" id="btnCaptureLabel" class="btn btn-warning btn-lg">
-                        📸 Take Label Snapshot
+                <div class="step-actions" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                    <button type="button" id="btnCaptureLabel" class="btn btn-primary btn-lg" style="width: 100%; min-height: 48px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        Take Label Snapshot
                     </button>
-                    <label class="btn btn-outline-primary btn-lg" style="margin: 0; cursor: pointer;">
-                        📁 Upload Label Photo
+                    <label class="btn btn-secondary-light btn-lg" style="margin: 0; cursor: pointer; width: 100%; min-height: 48px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                        Upload Label Photo
                         <input type="file" id="fileUploadLabel" accept="image/*" multiple style="display: none;">
                     </label>
-                    <button type="button" id="btnRetakeLabel" class="btn btn-danger" style="display: none;">
-                        🔄 Retake Snapshot
+                    <button type="button" id="btnRetakeLabel" class="btn btn-destructive btn-lg" style="display: none; width: 100%; min-height: 48px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        Retake Snapshot
                     </button>
                 </div>
+
                 <div id="labelPhotoCollection" style="display: none; margin: 0 auto 20px; max-width: 680px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <strong>Inspection photos</strong>
@@ -217,43 +230,49 @@
                     <div id="labelPhotoThumbnails" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
                 </div>
 
-                <!-- Calibration Marker Tool (Rule 7 Font Size Measurement) -->
-                <div class="calibration-box">
-                    <h4 style="color: var(--primary-navy); font-size: 0.95rem; margin-bottom: 8px;">
-                        📐 Rule 7 Font-Size Calibration Tool (Pixel-to-Millimeter Conversion)
-                    </h4>
-                    <p class="text-secondary" style="font-size: 0.85rem; margin-bottom: 12px;">
-                        Place a reference marker (e.g. coin or credit card edge 54mm) next to the package to accurately measure font heights in mm against statutory Rule 7 thresholds.
+                <!-- Calibration Marker Tool (Rule 7 Font Size Measurement) - De-nested -->
+                <div class="calibration-panel">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.3 8.7 8.7 21.3c-.4.4-1 .4-1.4 0l-6-6c-.4-.4-.4-1 0-1.4L13.9 1.3c.4-.4 1-.4 1.4 0l6 6c.4.4.4 1 0 1.4z"/><path d="m7.5 10.5 2 2M10.5 7.5l2 2M13.5 4.5l2 2M4.5 13.5l2 2"/></svg>
+                        <h4 style="color: var(--primary-navy); font-size: 1rem; font-weight: 700; margin: 0;">
+                            Rule 7 Font-Size Calibration
+                        </h4>
+                    </div>
+                    <p class="text-secondary" style="font-size: 0.85rem; margin-bottom: 14px;">
+                        Place a reference marker (e.g. credit card 85.6mm or coin) next to the package to convert screen pixels into statutory millimeters.
                     </p>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: flex-end;">
+                    <div class="calibration-grid">
                         <div>
-                            <label class="form-label small">Reference Width (mm)</label>
-                            <input type="number" id="inputCalibrationMm" class="form-control" value="50">
+                            <label class="form-label small">Reference (mm)</label>
+                            <input type="number" id="inputCalibrationMm" class="form-control" value="50" inputmode="numeric">
                         </div>
                         <div>
-                            <label class="form-label small">Measured Screen Width (px)</label>
-                            <input type="number" id="inputCalibrationPx" class="form-control" value="1250">
+                            <label class="form-label small">Screen (px)</label>
+                            <input type="number" id="inputCalibrationPx" class="form-control" value="1250" inputmode="numeric">
                         </div>
                         <div>
                             <label class="form-label small">Calculated Ratio</label>
-                            <div id="displayPxPerMm" style="font-weight: 700; padding: 10px; background: #FFFFFF; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
-                                25.0 px/mm
+                            <div id="displayPxPerMm" class="calibration-ratio-box">
+                                <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">25.0 px/mm</span>
+                                <span style="font-size: 10px; text-transform: uppercase; color: #94A3B8; display: block;">Read-only</span>
                             </div>
                         </div>
                         <div>
-                            <button type="button" id="btnApplyCalibration" class="btn btn-sm btn-primary" style="height: 42px;">
-                                Apply Calibration
+                            <button type="button" id="btnApplyCalibration" class="btn btn-secondary-light" style="width: 100%; min-height: 48px;">
+                                Apply
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
-                    <button type="button" onclick="goToStep(2)" class="btn btn-outline-primary">
+                <!-- Sticky Bottom Navigation Bar -->
+                <div class="sticky-bottom-nav">
+                    <button type="button" onclick="goToStep(2)" class="btn btn-secondary-light" style="flex: 0 0 96px; min-height: 48px;">
                         ← Back
                     </button>
-                    <button type="button" id="btnRunAiCheck" class="btn btn-success btn-lg" disabled>
-                        ⚡ Run AI Compliance Verification →
+                    <button type="button" id="btnRunAiCheck" class="btn btn-success" style="flex: 1; min-height: 48px;" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        Run AI Verification
                     </button>
                 </div>
             </div>
@@ -264,9 +283,9 @@
              ============================================================ -->
         <div id="stepContent4" class="wizard-step-content">
             <div class="card" style="text-align: center; padding: 60px 20px;">
-                <div class="spinner-icon" style="margin: 0 auto 20px auto; border-top-color: var(--navy-light); border-color: #E2E8F0; border-top-color: var(--navy-light);"></div>
-                <h3 style="color: var(--primary-navy); margin-bottom: 8px;">Analyzing Packaged Commodity Label...</h3>
-                <p class="text-secondary">Multimodal Gemini Vision is identifying mandatory Rule 6 declarations and measuring Rule 7 font sizes.</p>
+                <div class="spinner-icon" style="margin: 0 auto 20px auto; border-top-color: var(--color-primary); border-color: #E2E8F0; border-top-color: var(--color-primary);"></div>
+                <h3 style="color: var(--primary-navy); margin-bottom: 8px; font-weight: 700;">Analyzing Packaged Commodity Label...</h3>
+                <p class="text-secondary" style="font-size: 0.95rem;">Multimodal Gemini Vision is identifying mandatory Rule 6 declarations and measuring Rule 7 font sizes.</p>
             </div>
         </div>
 
@@ -278,7 +297,7 @@
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Inspection Results & Statutory Summary</h2>
-                        <p class="text-secondary" style="font-size: 0.88rem;">
+                        <p class="text-secondary" style="font-size: 0.88rem; margin: 4px 0 0 0;">
                             Evaluated under Legal Metrology Act, 2009 and Packaged Commodities Rules, 2011.
                         </p>
                     </div>
@@ -288,14 +307,14 @@
                 </div>
 
                 <!-- Top Score & Authenticity Banner -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
-                    <div class="card" style="background: #F8FAFC; margin: 0; padding: 18px;">
-                        <div class="kpi-title">Legal Metrology Compliance Score</div>
-                        <div id="resComplianceScore" class="kpi-value score-green">98%</div>
-                        <small class="text-muted">Calculated across Rule 6(1)(a-g) mandatory declarations</small>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 20px;">
+                    <div class="card" style="background: #F8FAFC; margin: 0; padding: 16px; border-left: 3px solid var(--success);">
+                        <div class="kpi-title">Legal Metrology Score</div>
+                        <div id="resComplianceScore" class="kpi-value score-green" style="font-size: 28px;">98%</div>
+                        <small class="text-muted">Rule 6(1)(a-g) mandatory declarations</small>
                     </div>
 
-                    <div class="card" style="background: #F8FAFC; margin: 0; padding: 18px;">
+                    <div class="card" style="background: #F8FAFC; margin: 0; padding: 16px; border-left: 3px solid var(--navy-light);">
                         <div class="kpi-title">Product Authenticity Check</div>
                         <div style="margin: 8px 0;">
                             <span id="resAuthStatus" class="badge badge-success">✓ Product Authenticity Verified</span>
@@ -305,9 +324,12 @@
                 </div>
 
                 <!-- Inspection Metadata Inputs (Store & Location) -->
-                <div style="background: #F1F5F9; border-radius: var(--radius-sm); padding: 16px; margin-bottom: 24px;">
-                    <h4 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--primary-navy);">📍 Inspection Location Details</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div style="background: #F1F5F9; border-radius: var(--radius-card); padding: 16px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--primary-navy);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <h4 style="font-size: 0.95rem; font-weight: 700; margin: 0;">Inspection Location Details</h4>
+                    </div>
+                    <div class="inspection-meta-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div>
                             <label class="form-label small">Store / Retailer Name</label>
                             <input type="text" id="inputStoreName" class="form-control" value="Modern Bazaar Supermarket, Connaught Place">
@@ -320,32 +342,41 @@
                 </div>
 
                 <!-- Violations Flagged Section -->
-                <div id="resViolationsSection" style="margin-bottom: 24px;">
-                    <h3 style="color: var(--danger); font-size: 1.15rem; margin-bottom: 12px;">
-                        🚨 Statutory Violations & Irregularities Flagged
-                    </h3>
+                <div id="resViolationsSection" style="margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: var(--danger);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">
+                            Statutory Violations & Irregularities Flagged
+                        </h3>
+                    </div>
                     <div id="resViolationsList">
                         <!-- Dynamic violation cards -->
                     </div>
                 </div>
 
-                <div id="noViolationsCard" style="display: none; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: var(--radius-sm); padding: 16px; margin-bottom: 24px; color: #065F46;">
+                <div id="noViolationsCard" style="display: none; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: var(--radius-card); padding: 16px; margin-bottom: 20px; color: #065F46;">
                     <strong>✓ Fully Compliant:</strong> All mandatory declarations are present in prescribed font sizes on the Principal Display Panel with zero legal violations.
                 </div>
 
                 <!-- Declarations Breakdown -->
-                <h3 style="color: var(--primary-navy); font-size: 1.15rem; margin-bottom: 12px;">
-                    📋 Rule 6 Mandatory Declarations Checklist
-                </h3>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: var(--primary-navy);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+                    <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">
+                        Rule 6 Mandatory Declarations Checklist
+                    </h3>
+                </div>
                 <div id="resDeclarationsList">
                     <!-- Dynamic declaration items -->
                 </div>
 
                 <!-- Out of Scope Physical Verification Disclosures -->
-                <div style="margin-top: 24px; background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: var(--radius-sm); padding: 16px;">
-                    <h4 style="color: var(--primary-navy); font-size: 0.95rem; margin-bottom: 8px;">
-                        ℹ️ Physical Verification & MPE Disclosures (Rules 18 & 19–22)
-                    </h4>
+                <div style="margin-top: 20px; background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: var(--radius-card); padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: var(--primary-navy);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>
+                        <h4 style="font-size: 0.95rem; font-weight: 700; margin: 0;">
+                            Physical Verification & MPE Disclosures (Rules 18 & 19–22)
+                        </h4>
+                    </div>
                     <div id="resOutOfScopeList" style="font-size: 0.85rem; color: #475569; display: grid; gap: 6px;">
                         <div>• <strong>First Schedule MPE (Rules 19–22):</strong> Net quantity deficiency error testing requires physical weighing/measuring — cannot be assessed from photo alone.</div>
                         <div>• <strong>Rule 18 Dealer Obligations:</strong> Over-charging above MRP and Class III weighing scale accuracy requires physical store inspection.</div>
@@ -353,12 +384,14 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                    <button type="button" id="btnNewScan" class="btn btn-outline-primary">
-                        🔄 Start New Scan
+                <div class="step-actions" style="display: flex; gap: 12px; margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 18px;">
+                    <button type="button" id="btnNewScan" class="btn btn-secondary-light" style="flex: 1; min-height: 48px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        New Scan
                     </button>
-                    <button type="button" id="btnSaveAndReport" class="btn btn-primary btn-lg">
-                        💾 Save Inspection & Generate Official Dossier (PDF) →
+                    <button type="button" id="btnSaveAndReport" class="btn btn-primary" style="flex: 1.5; min-height: 48px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Save Dossier (PDF)
                     </button>
                 </div>
             </div>
@@ -369,17 +402,17 @@
     <div id="cropperModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.88); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
         <div style="background: #FFFFFF; border-radius: 12px; max-width: 720px; width: 100%; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="margin: 0; font-size: 1.1rem; color: #0F172A;">✂️ Document Perspective Cropping & Straightening</h3>
+                <h3 style="margin: 0; font-size: 1.1rem; color: #0F172A; font-weight: 700;">Perspective Cropping & Alignment</h3>
                 <span class="text-secondary small">Drag TL, TR, BR, BL handles</span>
             </div>
             <div style="position: relative; width: 100%; background: #0F172A; border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 280px; max-height: 480px;">
                 <canvas id="cropperCanvas"></canvas>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; flex-wrap: wrap; gap: 10px;">
-                <button type="button" id="btnCropperReset" class="btn btn-outline-primary btn-sm">↺ Reset Corners</button>
+                <button type="button" id="btnCropperReset" class="btn btn-secondary-light btn-sm">↺ Reset Corners</button>
                 <div style="display: flex; gap: 10px;">
-                    <button type="button" id="btnCropperSkip" class="btn btn-outline-primary btn-sm">✓ Use Original</button>
-                    <button type="button" id="btnCropperApply" class="btn btn-success">✂️ Apply Crop & Flatten →</button>
+                    <button type="button" id="btnCropperSkip" class="btn btn-secondary-light btn-sm">✓ Use Original</button>
+                    <button type="button" id="btnCropperApply" class="btn btn-success">Apply Crop & Flatten →</button>
                 </div>
             </div>
         </div>

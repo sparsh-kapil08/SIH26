@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -16,38 +16,45 @@
 
     <header class="app-header">
         <a href="dashboard.html" class="brand-container">
-            <svg class="emblem-img" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="46" stroke="#FF9933" stroke-width="4"/>
-                <circle cx="50" cy="50" r="28" stroke="#138808" stroke-width="3"/>
-                <circle cx="50" cy="50" r="8" fill="#0B2545"/>
-                <path d="M50 22 L50 78 M22 50 L78 50 M30 30 L70 70 M30 70 L70 30" stroke="#0056B3" stroke-width="2"/>
+            <svg class="emblem-img" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="14" cy="14" r="13" stroke="#FF9933" stroke-width="1.5"/>
+                <circle cx="14" cy="14" r="8" stroke="#138808" stroke-width="1"/>
+                <circle cx="14" cy="14" r="2.5" fill="#0056B3"/>
+                <path d="M14 6v16M6 14h16M8.34 8.34l11.32 11.32M8.34 19.66L19.66 8.34" stroke="#0056B3" stroke-width="0.75"/>
             </svg>
-            <div>
-                <div class="brand-title">उपभोक्ता मामले विभाग | Department of Consumer Affairs</div>
-                <div class="brand-subtitle">Legal Metrology Inspection Command Center (SIH26034)</div>
+            <div class="brand-title-stack">
+                <span class="brand-title-hi">उपभोक्ता मामले विभाग</span>
+                <span class="brand-title-en">Department of Consumer Affairs</span>
             </div>
         </a>
-        <div class="user-badge-header">
-            <div class="officer-pill">
-                <span id="userNameDisplay">Inspector Rajesh Sharma</span>
-                <span style="opacity: 0.6; margin: 0 4px;">|</span>
-                <span id="userBadgeDisplay" style="font-family: monospace;">LM-DEL-8942</span>
-            </div>
-            <span id="userRoleBadge" class="badge badge-officer">Enforcement Officer</span>
-            <a href="scan.html" class="btn btn-warning btn-sm">
-                📷 New Scan
+        <div class="header-right">
+            <a href="scan.html" class="btn btn-primary btn-icon-only" aria-label="New Scan" title="New Scan">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             </a>
-            <button type="button" id="btnLogout" class="btn btn-outline-primary btn-sm" style="color: #FFFFFF; border-color: rgba(255,255,255,0.3);">
-                Sign Out
-            </button>
         </div>
     </header>
+
+    <!-- Officer Sub-bar: Exactly 36px Height -->
+    <div class="officer-subbar">
+        <div class="officer-subbar-left">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span id="userNameDisplay">Inspector Rajesh Sharma</span>
+            <span id="userRoleBadge" style="display: none;"></span>
+        </div>
+        <div class="officer-subbar-right">
+            <span class="officer-badge-id" id="userBadgeDisplay">LM-DEL-8942</span>
+            <button type="button" id="btnLogout" class="btn-signout" title="Sign Out">
+                <span>Sign Out</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            </button>
+        </div>
+    </div>
 
     <main class="container">
         <!-- Admin Banner (shown only to admins) -->
         <div id="adminControlsBanner" class="card" style="display: none; background: #FEF3C7; border: 1px solid #FCD34D; padding: 14px 20px; align-items: center; justify-content: space-between;">
             <div>
-                <strong style="color: #92400E;">👑 Central Directorate View Active:</strong>
+                <strong style="color: #92400E;">Central Directorate View Active:</strong>
                 <span style="color: #78350F; font-size: 0.9rem; margin-left: 8px;">
                     Displaying aggregated market inspection data across all zones, enforcement officers, and state jurisdictions.
                 </span>
@@ -61,20 +68,20 @@
                 <div class="kpi-title">Total Products Audited</div>
                 <div id="statTotalScans" class="kpi-value">0</div>
             </div>
-            <div class="kpi-card" style="border-left: 4px solid var(--success);">
+            <div class="kpi-card" style="border-left: 3px solid var(--success);">
                 <div class="kpi-title">Compliant Products</div>
                 <div id="statCompliant" class="kpi-value" style="color: var(--success);">0</div>
             </div>
-            <div class="kpi-card" style="border-left: 4px solid var(--danger);">
-                <div class="kpi-title">Non-Compliant Flagged</div>
+            <div class="kpi-card" style="border-left: 3px solid var(--danger);">
+                <div class="kpi-title">Violations Flagged</div>
                 <div id="statNonCompliant" class="kpi-value" style="color: var(--danger);">0</div>
             </div>
-            <div class="kpi-card" style="border-left: 4px solid var(--accent-saffron);">
-                <div class="kpi-title">Authenticity Mismatches</div>
+            <div class="kpi-card" style="border-left: 3px solid var(--accent-saffron);">
+                <div class="kpi-title">Authenticity Flags</div>
                 <div id="statAuthFlags" class="kpi-value" style="color: #D97706;">0</div>
             </div>
-            <div class="kpi-card" style="border-left: 4px solid var(--navy-light);">
-                <div class="kpi-title">Avg Compliance Score</div>
+            <div class="kpi-card" style="border-left: 3px solid var(--navy-light);">
+                <div class="kpi-title">Avg Compliance</div>
                 <div id="statAvgScore" class="kpi-value" style="color: var(--navy-light);">0%</div>
             </div>
         </div>
@@ -83,25 +90,27 @@
         <div class="card">
             <div class="card-header">
                 <div>
-                    <h2 class="card-title">Market Inspection Dossiers</h2>
-                    <p class="text-secondary" style="font-size: 0.88rem;">
+                    <h2 class="card-title section-heading-lg" style="margin: 0 0 4px 0;">Market Inspection Dossiers</h2>
+                    <p class="text-secondary" style="font-size: 0.88rem; margin: 0;">
                         Real-time log of camera scans, AI-extracted declarations, and Legal Metrology Rule 6/7/8 violations.
                     </p>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button type="button" id="btnExportCsv" class="btn btn-sm btn-outline-primary">
-                        📥 Export CSV Audit
+                <div class="card-header-actions" style="display: flex; gap: 8px;">
+                    <button type="button" id="btnExportCsv" class="btn btn-sm btn-secondary-light">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                        Export CSV
                     </button>
                     <a href="scan.html" class="btn btn-sm btn-primary">
-                        📷 Launch Inspection Scanner
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        New Inspection
                     </a>
                 </div>
             </div>
 
             <!-- Filter and Search Bar -->
-            <div style="display: grid; grid-template-columns: 1fr auto; gap: 16px; margin-bottom: 20px;">
+            <div class="search-filter-grid" style="display: grid; grid-template-columns: 1fr auto; gap: 12px; margin-bottom: 20px;">
                 <div>
-                    <input type="text" id="searchScans" class="form-control" placeholder="🔍 Search by product name, brand, barcode number, store or location...">
+                    <input type="text" id="searchScans" class="form-control" placeholder="Search by product, brand, GTIN barcode, or store location...">
                 </div>
                 <div>
                     <select id="filterStatus" class="form-control">
@@ -136,14 +145,16 @@
             </div>
 
             <div id="scansEmptyState" style="display: none; text-align: center; padding: 40px 20px;">
-                <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
-                <h4 style="color: var(--text-secondary);">No inspection dossiers match the criteria.</h4>
-                <p class="text-muted" style="font-size: 0.9rem;">Click "Launch Inspection Scanner" to scan packaged commodities.</p>
+                <div style="margin-bottom: 12px; color: var(--text-muted);">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>
+                </div>
+                <h4 style="color: var(--text-secondary); margin-bottom: 4px;">No inspection dossiers match the criteria.</h4>
+                <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 0;">Click "New Inspection" to start scanning packaged commodities.</p>
             </div>
         </div>
     </main>
 
-        <script src="js/config.js"></script>
+    <script src="js/config.js"></script>
     <script src="js/supabase-client.js"></script>
     <script src="js/dashboard.js"></script>
 </body>

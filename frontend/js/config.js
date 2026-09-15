@@ -5,7 +5,7 @@
 // ============================================================
 
 // This file is also served as a static browser script on the multi-page build.
-const env = { VITE_BACKEND_URL: 'http://localhost:5000' };
+const env = { VITE_BACKEND_URL: 'http://localhost:5001' };
 
 const CONFIG = {
     // Backend API Base URL strictly fetched from Vite environment variables (.env / Vercel VITE_)

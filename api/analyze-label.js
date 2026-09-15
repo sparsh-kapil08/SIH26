@@ -1,9 +1,9 @@
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const SUPPORTED_MODELS = [
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite',
     'gemini-3-flash-preview',
-    'gemini-3.1-flash-lite',
-    'gemini-2.5-flash',
-    'gemini-2.5-flash-lite'
+    'gemini-flash-latest'
 ];
 const PRIMARY_MODEL = SUPPORTED_MODELS.includes(process.env.GEMINI_MODEL)
     ? process.env.GEMINI_MODEL
@@ -46,8 +46,31 @@ module.exports = async (req, res) => {
         }
 
         if (!GEMINI_API_KEY) {
-            console.error('[Vision API] GEMINI_API_KEY is missing.');
-            return res.status(503).json({ success: false, error: 'Gemini API key is not configured on the server.' });
+            console.warn('[Vision API] GEMINI_API_KEY is not set. Returning demonstration legal metrology extraction data.');
+            const demoProductName = barcodeData?.productName || 'Parle-G Gold Biscuits (1 kg)';
+            const demoManufacturer = barcodeData?.manufacturer || 'Parle Products Pvt. Ltd.';
+            const demoMrp = barcodeData?.mrp || '₹ 140.00';
+            const simulatedData = {
+                product_name: { value: demoProductName, present: true, confidence: 0.95, bounding_box: { x: 0.1, y: 0.1, w: 0.8, h: 0.12 }, notes: "Prominently displayed on Principal Display Panel" },
+                manufacturer_name: { value: demoManufacturer, present: true, confidence: 0.92, bounding_box: { x: 0.1, y: 0.65, w: 0.8, h: 0.08 }, notes: "Registered manufacturer identified" },
+                manufacturer_address: { value: "Plot No. 24, Industrial Area, Phase II, New Delhi 110020", present: true, confidence: 0.89, bounding_box: { x: 0.1, y: 0.74, w: 0.8, h: 0.08 }, notes: "Complete postal address identified" },
+                net_quantity: { value: "1 kg", present: true, confidence: 0.94, unit: "g", numeric_value: 1000, bounding_box: { x: 0.1, y: 0.35, w: 0.35, h: 0.08 }, isolated_free_area: true, notes: "Prominent numeral declaration with standard unit" },
+                mfg_date: { value: "08/2026", present: true, confidence: 0.91, bounding_box: { x: 0.55, y: 0.35, w: 0.35, h: 0.08 }, notes: "Month and year of manufacture declared" },
+                mrp: { value: `${demoMrp} (incl. of all taxes)`, present: true, confidence: 0.96, numeric_value: 140, has_tax_inclusion_statement: true, bounding_box: { x: 0.1, y: 0.46, w: 0.45, h: 0.09 }, notes: "Statutory inclusive of all taxes declaration present" },
+                consumer_care: { value: "1800-11-4000 / care@doca.gov.in", present: true, confidence: 0.90, has_phone: true, has_email: true, bounding_box: { x: 0.1, y: 0.84, w: 0.8, h: 0.08 }, notes: "Toll-free consumer care contact and email present" },
+                country_of_origin: { value: "India", present: true, is_imported: false },
+                importer_details: { value: null, present: false },
+                language_detected: "English & Hindi",
+                is_bilingual_or_english_hindi: true,
+                pdp_area_estimate: "Rectangular PDP",
+                font_legibility_rating: "High",
+                general_observations: "[Demo Mode] Mandatory declarations detected. Add GEMINI_API_KEY to backend/.env for live AI extraction."
+            };
+            return res.json({
+                success: true,
+                simulated: true,
+                data: simulatedData
+            });
         }
 
         const imageParts = images.map(image => {

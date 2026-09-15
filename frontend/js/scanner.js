@@ -62,6 +62,14 @@ function canNavigateToStep(step) {
     return false;
 }
 
+const STEP_TITLES = {
+    1: 'Step 1 of 5 · Barcode Capture',
+    2: 'Step 2 of 5 · Registry Lookup',
+    3: 'Step 3 of 5 · Label & Calibration',
+    4: 'Step 4 of 5 · AI Analysis',
+    5: 'Step 5 of 5 · Compliance Dossier'
+};
+
 function goToStep(step) {
     currentStep = step;
     document.querySelectorAll('.step-indicator').forEach(el => {
@@ -71,6 +79,11 @@ function goToStep(step) {
         if (indicatorStep === step) el.classList.add('active');
         else if (indicatorStep < step) el.classList.add('completed');
     });
+
+    const sublabelEl = document.getElementById('stepperStepLabel');
+    if (sublabelEl && STEP_TITLES[step]) {
+        sublabelEl.textContent = STEP_TITLES[step];
+    }
 
     document.querySelectorAll('.wizard-step-content').forEach(el => el.classList.remove('active'));
     const targetContent = document.getElementById(`stepContent${step}`);

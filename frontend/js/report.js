@@ -108,7 +108,11 @@ function renderDeclarationsTable(declarations) {
 
     declarations.forEach(d => {
         const tr = document.createElement('tr');
-        const statusBadge = d.compliant ? 
+        const label = d.label || d.name || d.declaration_type || 'Mandatory Declaration';
+        const ruleReference = d.rule_reference || d.rule_ref || 'Unclassified Check';
+        const valueExtracted = d.value_extracted ?? d.value ?? null;
+        const isCompliant = d.compliant ?? d.status === 'compliant';
+        const statusBadge = isCompliant ?
             '<span class="badge badge-success">✓ Pass</span>' : 
             '<span class="badge badge-danger">✗ Fail</span>';
 
@@ -117,9 +121,9 @@ function renderDeclarationsTable(declarations) {
             'Standard';
 
         tr.innerHTML = `
-            <td><strong>${d.label || d.declaration_type}</strong></td>
-            <td><code>${d.rule_reference || 'Unclassified Check'}</code></td>
-            <td>${d.value_extracted ? `<strong>"${d.value_extracted}"</strong>` : '<em class="text-danger">Missing / Not Found</em>'}</td>
+            <td><strong>${label}</strong></td>
+            <td><code>${ruleReference}</code></td>
+            <td>${valueExtracted ? `<strong>"${valueExtracted}"</strong>` : '<em class="text-danger">Missing / Not Found</em>'}</td>
             <td>${fontDisplay}</td>
             <td>${statusBadge}</td>
         `;

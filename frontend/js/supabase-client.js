@@ -79,6 +79,10 @@ function toUuid(id) {
     return `${hex.slice(0,8)}-${hex.slice(8,12)}-4${hex.slice(13,16)}-8${hex.slice(17,20)}-${hex.slice(20,32)}`;
 }
 
+function isUuid(id) {
+    return typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+}
+
 const DB = {
     async getCurrentUser() {
         const client = getSupabase();
@@ -140,7 +144,8 @@ const DB = {
             const localUser = DB.getLocalUser();
             rawOfficerId = localUser?.id;
         }
-        const officerId = toUuid(rawOfficerId);
+        // Demo/local IDs do not exist in profiles and would violate the FK on scans.officer_id.
+        const officerId = isUuid(rawOfficerId) ? rawOfficerId : null;
         const scanId = scanData.id && toUuid(scanData.id)
             ? scanData.id
             : (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : '00000000-0000-4000-8000-' + Date.now().toString().padStart(12, '0'));
@@ -175,11 +180,34 @@ const DB = {
         };
 
         // Cache locally with both raw and mapped officer_id
+        const declarationRecords = declarations.map(d => ({
+            declaration_type: d.declaration_type || d.rule_ref || 'unknown',
+            label: d.label || d.name || 'Declaration',
+            rule_reference: d.rule_reference || d.rule_ref || 'Unclassified Check',
+            value_extracted: d.value_extracted ?? d.value ?? null,
+            confidence: Number(d.confidence || 0),
+            present: Boolean(d.present ?? d.value_extracted ?? d.value),
+            compliant: d.compliant ?? d.status === 'compliant',
+            bounding_box: d.bounding_box || null,
+            measured_font_size_mm: d.measured_font_size_mm || null,
+            min_required_font_size_mm: d.min_required_font_size_mm || null,
+            notes: d.notes || null
+        }));
+        const violationRecords = violations.map(v => ({
+            rule_reference: v.rule_reference || v.rule_ref || 'Compliance Check',
+            title: v.title || v.rule_name || 'Compliance Violation',
+            description: v.description || 'Statutory requirement not satisfied.',
+            severity: ['critical', 'warning', 'info'].includes(v.severity) ? v.severity : 'critical',
+            declaration_type: v.declaration_type || null,
+            penalty_section: v.penalty_section || v.penalty_provision || null,
+            suggestion: v.suggestion || null
+        }));
+
         LocalStorageDB.saveScan({
             ...scanRecord,
             raw_officer_id: rawOfficerId,
-            declarations,
-            violations
+            declarations: declarationRecords,
+            violations: violationRecords
         });
 
         if (client) {
@@ -191,36 +219,18 @@ const DB = {
                 
                 if (scanErr) throw scanErr;
 
-                if (declarations.length > 0) {
-                    const decRecords = declarations.map(d => ({
-                        scan_id: scanId,
-                        declaration_type: d.declaration_type || d.rule_ref || 'unknown',
-                        label: d.label || d.name || 'Declaration',
-                        rule_reference: d.rule_reference || d.rule_ref || 'Unclassified Check',
-                        value_extracted: d.value_extracted ?? d.value ?? null,
-                        confidence: Number(d.confidence || 0),
-                        present: Boolean(d.present),
-                        compliant: d.compliant ?? d.status === 'compliant',
-                        bounding_box: d.bounding_box || null,
-                        measured_font_size_mm: d.measured_font_size_mm || null,
-                        min_required_font_size_mm: d.min_required_font_size_mm || null,
-                        notes: d.notes || null
-                    }));
-                    await client.from('declarations').upsert(decRecords);
+                if (declarationRecords.length > 0) {
+                    const { error: declarationError } = await client
+                        .from('declarations')
+                        .insert(declarationRecords.map(d => ({ ...d, scan_id: scanId })));
+                    if (declarationError) throw declarationError;
                 }
 
-                if (violations.length > 0) {
-                    const vioRecords = violations.map(v => ({
-                        scan_id: scanId,
-                        rule_reference: v.rule_reference || v.rule_ref || 'Compliance Check',
-                        title: v.title || v.rule_name || 'Compliance Violation',
-                        description: v.description || 'Statutory requirement not satisfied.',
-                        severity: ['critical', 'warning', 'info'].includes(v.severity) ? v.severity : 'critical',
-                        declaration_type: v.declaration_type || null,
-                        penalty_section: v.penalty_section || v.penalty_provision || null,
-                        suggestion: v.suggestion || null
-                    }));
-                    await client.from('violations').upsert(vioRecords);
+                if (violationRecords.length > 0) {
+                    const { error: violationError } = await client
+                        .from('violations')
+                        .insert(violationRecords.map(v => ({ ...v, scan_id: scanId })));
+                    if (violationError) throw violationError;
                 }
             } catch (e) {
                 console.warn('Syncing to Supabase:', e);
